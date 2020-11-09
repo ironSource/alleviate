@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">ForegroundTesterApp</string>
+    <string name="my_channel">Rotem updates</string>
+    <string name="my_title">Rotem title</string>
+    <string name="my_body">Rotem body</string>
+    <string name="fetch_repos">Fetch Repos</string>
+</resources>
