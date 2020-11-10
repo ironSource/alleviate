@@ -4,17 +4,20 @@ import android.app.Service
 import android.app.job.JobInfo
 import android.content.Intent
 import com.rotemati.foregroundsdk.EligibleForRescheduling
-import com.rotemati.foregroundsdk.NotificationBuilder
 import com.rotemati.foregroundsdk.extensions.scheduleForeground
-import com.rotemati.foregroundsdk.jobinfo.ForegroundJobInfo
 import com.rotemati.foregroundsdk.jobinfo.PendingJobsRepository
+import com.rotemati.foregroundsdk.jobinfo.foregroundJobInfo
 import com.rotemati.foregroundsdk.logger.SDKLogger
 import com.rotemati.foregroundsdk.network.ConnectivityEventsHandler
 import com.rotemati.foregroundsdk.network.ConnectivityEventsHandlerImpl
 import com.rotemati.foregroundsdk.notification.DefaultNotificationDescriptorCreator
+import com.rotemati.foregroundsdk.notification.NotificationBuilder
 import com.rotemati.foregroundsdk.notification.NotificationChannelsCreator
 import com.rotemati.foregroundsdk.notification.NotificationDescriptor
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 private const val NOTIFICATION_ID: Int = 654321
 private const val JOB_ID_NOT_VALID: Int = -1
@@ -63,31 +66,29 @@ class ForegroundService : Service() {
 				onError("connection type isn't allowed")
 				return START_NOT_STICKY
 			}
-			startForeground(NOTIFICATION_ID, notificationBuilder.build(jobInfo.notificationDescriptor))
-
-			SDKLogger.d("jobInfo.retryCount: ${jobInfo.retryCount}")
-			SDKLogger.d("jobInfo.maxRetries: ${jobInfo.maxRetries}")
-			SDKLogger.d("jobInfo.timeout: ${jobInfo.timeout}")
+			startForeground(
+					NOTIFICATION_ID,
+					notificationBuilder.build(jobInfo.notificationDescriptor)
+			)
 
 			CoroutineScope(Dispatchers.IO).launch {
 				withTimeoutOrNull(jobInfo.timeout) {
 					try {
-//                        jobInfo.foregroundObtainer.onForegroundObtained()
-						delay(120000)
+						jobInfo.foregroundObtainer.onForegroundObtained()
 					} catch (exception: Exception) {
 						exception.message?.let { SDKLogger.e(it) }
-						val newJobInfo = ForegroundJobInfo(
-								id = jobInfo.id,
-								networkType = jobInfo.networkType,
-								persisted = jobInfo.persisted,
-								minLatencyMillis = jobInfo.minLatencyMillis,
-								timeout = jobInfo.timeout,
-								notificationDescriptor = jobInfo.notificationDescriptor,
-//                                      foregroundObtainer = ReposForegroundObtainer(),
-								rescheduleOnFail = jobInfo.rescheduleOnFail,
-								maxRetries = jobInfo.maxRetries,
-								retryCount = jobInfo.retryCount + 1
-						)
+						val newJobInfo = foregroundJobInfo {
+							id = jobInfo.id
+							networkType = jobInfo.networkType
+							persisted = jobInfo.persisted
+							minLatencyMillis = jobInfo.minLatencyMillis
+							timeout = jobInfo.timeout
+							notificationDescriptor = jobInfo.notificationDescriptor
+							rescheduleOnFail = jobInfo.rescheduleOnFail
+							maxRetries = jobInfo.maxRetries
+							retryCount = jobInfo.retryCount + 1
+							foregroundObtainer = jobInfo.foregroundObtainer
+						}
 						if (eligibleForRescheduling.isEligible(newJobInfo)) {
 							scheduleForeground(this@ForegroundService, newJobInfo)
 						} else {
@@ -105,7 +106,10 @@ class ForegroundService : Service() {
 		return START_NOT_STICKY
 	}
 
-	private fun onError(error: String, notificationDescriptor: NotificationDescriptor = defaultNotificationDescriptorCreator.create()) {
+	private fun onError(
+			error: String,
+			notificationDescriptor: NotificationDescriptor = defaultNotificationDescriptorCreator.create()
+	) {
 		SDKLogger.e(error)
 		startForeground(NOTIFICATION_ID, notificationBuilder.build(notificationDescriptor))
 		stopForeground(true)
@@ -131,7 +135,6 @@ class ForegroundService : Service() {
 	override fun onBind(intent: Intent?): Nothing? = null
 
 	companion object {
-		//		const val EXTRA_JOB_INFO = "com.ironsource.foreground.EXTRA_JOB_INFO"
 		const val EXTRA_JOB_ID = "com.ironsource.foreground.EXTRA_JOB_ID"
 	}
 }

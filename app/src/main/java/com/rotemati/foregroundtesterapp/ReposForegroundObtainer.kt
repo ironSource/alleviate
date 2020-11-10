@@ -6,8 +6,8 @@ import kotlinx.coroutines.delay
 
 class ReposForegroundObtainer : ForegroundObtainer {
 
-    override suspend fun onForegroundObtained() {
-        AppLogger.logMethod()
-        delay(10000)
-    }
+	override suspend fun onForegroundObtained() {
+		AppLogger.logMethod()
+		delay(10000)
+	}
 }

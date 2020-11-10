@@ -13,8 +13,8 @@ import kotlinx.coroutines.flow.flow
 import kotlin.coroutines.CoroutineContext
 
 class BucketPollerImpl(
-        private val context: Context,
-        private val bucketPollingDelay: Long,
+		private val context: Context,
+		private val bucketPollingDelay: Long,
 ) : BucketPoller {
 
 	private lateinit var coroutineContext: CoroutineContext

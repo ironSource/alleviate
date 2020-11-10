@@ -1,4 +1,4 @@
-package com.rotemati.foregroundsdk
+package com.rotemati.foregroundsdk.notification
 
 import android.app.Notification
 import android.content.Context
@@ -11,27 +11,6 @@ class NotificationBuilder(private val context: Context,
                           private val notificationChannelsCreator: NotificationChannelsCreator
 ) {
 	var channel: String = "General updates"
-	var title: String = "Process updates"
-	var body: String = "Initializing the experience"
-	var iconRes: Int = android.R.drawable.stat_notify_sync
-
-	fun channel(init: () -> String) {
-		channel = init()
-	}
-
-	fun title(init: () -> String): NotificationBuilder {
-		title = init()
-		return this
-	}
-
-	fun body(init: () -> String) {
-		body = init()
-	}
-
-	fun iconRes(init: () -> Int) {
-		iconRes = init()
-	}
-
 	fun build(notificationDescriptor: NotificationDescriptor): Notification {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			notificationChannelsCreator.createChannel(channel)

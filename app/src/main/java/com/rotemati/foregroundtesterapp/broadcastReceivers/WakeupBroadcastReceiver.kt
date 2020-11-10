@@ -1,64 +1,35 @@
 package com.rotemati.foregroundtesterapp.broadcastReceivers
 
-import android.app.job.JobInfo.NETWORK_TYPE_ANY
+import android.app.job.JobInfo
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.rotemati.foregroundsdk.extensions.scheduleForeground
-import com.rotemati.foregroundsdk.jobinfo.ForegroundJobInfo
-import com.rotemati.foregroundsdk.notification.NotificationDescriptor
+import com.rotemati.foregroundsdk.jobinfo.foregroundJobInfo
+import com.rotemati.foregroundsdk.notification.notificationDescriptor
 import com.rotemati.foregroundtesterapp.R
-import com.rotemati.foregroundtesterapp.logger.AppLogger
-import com.rotemati.foregroundtesterapp.model.GitHubRepo
-import com.rotemati.foregroundtesterapp.webservices.getNetworkService
+import com.rotemati.foregroundtesterapp.ReposForegroundObtainer
 import java.util.concurrent.TimeUnit
 
 class WakeupBroadcastReceiver : BroadcastReceiver() {
-	private val repository = GitHubRepo(getNetworkService())
-
 	override fun onReceive(context: Context, intent: Intent?) {
-//        val sdkInitializer = sdkInitializer {
-//            context { context }
-//            bucketPollingDelay { TimeUnit.SECONDS.toMillis(3) }
-//            bucketPollingTimeout { TimeUnit.SECONDS.toMillis(30) }
-//            notification {
-//                channel { context.getString(R.string.my_channel) }
-//                title { context.getString(R.string.my_title) }
-//                body { context.getString(R.string.my_body) }
-//                iconRes { R.drawable.ic_launcher_foreground }
-//            }
-//        }
-//        GlobalScope.launch {
-//            sdkInitializer.start()
-//            try {
-//                delay(10000)
-//                val repos = repository.getRepos()
-//                AppLogger.i("${repos.size} repos fetched")
-//            } catch (exception: Exception) {
-//                exception.message?.let { AppLogger.e(it) }
-//            } finally {
-//                AppLogger.i("job finished!")
-//                sdkInitializer.finish()
-//            }
-//        }
-		AppLogger.logMethod()
-		val notificationDescriptor = NotificationDescriptor(
-                title = "Rotem",
-                body = "Matityahu",
-                iconResId = R.drawable.ic_launcher_foreground
-        )
-		val foregroundJobInfo = ForegroundJobInfo(
-                id = 11200,
-                minLatencyMillis = TimeUnit.SECONDS.toMillis(0),
-                persisted = true,
-                networkType = NETWORK_TYPE_ANY,
-                notificationDescriptor = notificationDescriptor,
-                timeout = 10000,
-//            foregroundObtainer = ReposForegroundObtainer(),
-                rescheduleOnFail = true,
-                maxRetries = 3
-        )
+		val myNotificationDescriptor = notificationDescriptor {
+			title = "Rotem"
+			body = "Matityahu"
+			iconResId = R.drawable.ic_launcher_foreground
+		}
 
+		val foregroundJobInfo = foregroundJobInfo {
+			id = 11200
+			networkType = JobInfo.NETWORK_TYPE_ANY
+			persisted = true
+			minLatencyMillis = TimeUnit.SECONDS.toMillis(0)
+			timeout = TimeUnit.SECONDS.toMillis(15)
+			notificationDescriptor = myNotificationDescriptor
+			foregroundObtainer = ReposForegroundObtainer()
+			rescheduleOnFail = true
+			maxRetries = 3
+		}
 		scheduleForeground(context, foregroundJobInfo)
 	}
 }

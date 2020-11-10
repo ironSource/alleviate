@@ -4,7 +4,6 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import com.rotemati.foregroundsdk.exceptions.MissingJobInfoException
 import com.rotemati.foregroundsdk.foreground.ForegroundService
 import com.rotemati.foregroundsdk.jobinfo.ForegroundJobInfo
 import com.rotemati.foregroundsdk.jobinfo.PendingJobsRepository
@@ -12,7 +11,6 @@ import com.rotemati.foregroundsdk.jobinfo.latencyEpoch
 import com.rotemati.foregroundsdk.logger.SDKLogger
 import java.util.concurrent.TimeUnit
 
-@Throws(MissingJobInfoException::class)
 fun scheduleForeground(
 		context: Context,
 		foregroundJobInfo: ForegroundJobInfo,
