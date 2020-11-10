@@ -4,18 +4,19 @@ import android.app.job.JobInfo.NETWORK_TYPE_ANY
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.rotemati.foregroundsdk.NotificationBuilder
 import com.rotemati.foregroundsdk.extensions.scheduleForeground
 import com.rotemati.foregroundsdk.jobinfo.ForegroundJobInfo
+import com.rotemati.foregroundsdk.notification.NotificationDescriptor
+import com.rotemati.foregroundtesterapp.R
 import com.rotemati.foregroundtesterapp.logger.AppLogger
 import com.rotemati.foregroundtesterapp.model.GitHubRepo
 import com.rotemati.foregroundtesterapp.webservices.getNetworkService
 import java.util.concurrent.TimeUnit
 
 class WakeupBroadcastReceiver : BroadcastReceiver() {
-    private val repository = GitHubRepo(getNetworkService())
+	private val repository = GitHubRepo(getNetworkService())
 
-    override fun onReceive(context: Context, intent: Intent?) {
+	override fun onReceive(context: Context, intent: Intent?) {
 //        val sdkInitializer = sdkInitializer {
 //            context { context }
 //            bucketPollingDelay { TimeUnit.SECONDS.toMillis(3) }
@@ -40,20 +41,24 @@ class WakeupBroadcastReceiver : BroadcastReceiver() {
 //                sdkInitializer.finish()
 //            }
 //        }
-        AppLogger.logMethod()
-        val notification = NotificationBuilder(context).build()
-        val foregroundJobInfo = ForegroundJobInfo(
-            id = 11200,
-            minLatencyMillis = TimeUnit.SECONDS.toMillis(0),
-            isPersisted = true,
-            networkType = NETWORK_TYPE_ANY,
-            notification = notification,
-            timeout = 10000,
+		AppLogger.logMethod()
+		val notificationDescriptor = NotificationDescriptor(
+                title = "Rotem",
+                body = "Matityahu",
+                iconResId = R.drawable.ic_launcher_foreground
+        )
+		val foregroundJobInfo = ForegroundJobInfo(
+                id = 11200,
+                minLatencyMillis = TimeUnit.SECONDS.toMillis(0),
+                persisted = true,
+                networkType = NETWORK_TYPE_ANY,
+                notificationDescriptor = notificationDescriptor,
+                timeout = 10000,
 //            foregroundObtainer = ReposForegroundObtainer(),
-            rescheduleOnFail = true,
-            maxRetries = 3
+                rescheduleOnFail = true,
+                maxRetries = 3
         )
 
-        scheduleForeground(context, foregroundJobInfo)
-    }
+		scheduleForeground(context, foregroundJobInfo)
+	}
 }

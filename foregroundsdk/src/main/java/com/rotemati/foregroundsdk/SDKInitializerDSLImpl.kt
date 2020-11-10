@@ -34,11 +34,11 @@ class SDKInitializerDSLImpl : SDKInitializerDSL {
 		bucketPollingTimeout = block()
 	}
 
-	fun notification(block: NotificationBuilder.() -> Unit) {
-		val notificationBuilder = NotificationBuilder(context)
-		notificationBuilder.block()
-		notification = notificationBuilder.build()
-	}
+//	fun notification(block: NotificationBuilder.() -> Unit) {
+//		val notificationBuilder = NotificationBuilder(context)
+//		notificationBuilder.block()
+//		notification = notificationBuilder.build()
+//	}
 
 	fun build() = SDKInitializer(context, bucketPollingTimeout, notification, bucketPollingDelay)
 }

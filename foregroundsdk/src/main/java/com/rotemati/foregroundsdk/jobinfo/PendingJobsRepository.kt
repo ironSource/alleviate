@@ -25,10 +25,4 @@ class PendingJobsRepository(context: Context) {
     fun contains(id: Int): Boolean {
         return pendingForegroundJobs.any { it.id == id }
     }
-
-    fun updateRetryCount(id: Int, retry: Int) {
-
-    }
-
-    fun clear() = sharedPrefs.clear()
 }
