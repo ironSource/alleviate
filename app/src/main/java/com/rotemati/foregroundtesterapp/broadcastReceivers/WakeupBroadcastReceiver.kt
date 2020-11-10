@@ -13,11 +13,6 @@ import java.util.concurrent.TimeUnit
 
 class WakeupBroadcastReceiver : BroadcastReceiver() {
 	override fun onReceive(context: Context, intent: Intent?) {
-		val myNotificationDescriptor = notificationDescriptor {
-			title = "Rotem"
-			body = "Matityahu"
-			iconResId = R.drawable.ic_launcher_foreground
-		}
 
 		val foregroundJobInfo = foregroundJobInfo {
 			id = 11200
@@ -25,7 +20,11 @@ class WakeupBroadcastReceiver : BroadcastReceiver() {
 			persisted = true
 			minLatencyMillis = TimeUnit.SECONDS.toMillis(0)
 			timeout = TimeUnit.SECONDS.toMillis(15)
-			notificationDescriptor = myNotificationDescriptor
+			notificationDescriptor = notificationDescriptor {
+				title = "Rotem"
+				body = "Matityahu"
+				iconResId = R.drawable.ic_launcher_foreground
+			}
 			foregroundObtainer = ReposForegroundObtainer()
 			rescheduleOnFail = true
 			maxRetries = 3
