@@ -3,10 +3,10 @@ package com.rotemati.foregroundsdk.network
 import android.content.Context
 import com.rotemati.foregroundsdk.extensions.getConnectivityManager
 
-interface ConnectivityEventsHandler {
-	fun register()
+interface ConnectivityHandler {
+	fun register(context: Context)
 
-	fun unregister()
+	fun unregister(context: Context)
 
 	var hasInternetAccess: Boolean
 
@@ -14,12 +14,11 @@ interface ConnectivityEventsHandler {
 
 	fun isConnected(context: Context): Boolean {
 		val networkInfo = context.getConnectivityManager().activeNetworkInfo
-		// todo check context.getConnectivityManager().activeNetwork
 		return networkInfo != null && networkInfo.isConnected
 	}
 
-	fun getDetailedNetworkState(context: Context): String? {
+	fun isRoaming(context: Context): Boolean {
 		val networkInfo = context.getConnectivityManager().activeNetworkInfo
-		return networkInfo?.detailedState?.name ?: ""
+		return networkInfo != null && networkInfo.isConnected && networkInfo.isRoaming
 	}
 }

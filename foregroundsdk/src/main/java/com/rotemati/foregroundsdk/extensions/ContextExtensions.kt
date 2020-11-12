@@ -2,6 +2,7 @@ package com.rotemati.foregroundsdk.extensions
 
 import android.app.AlarmManager
 import android.app.NotificationManager
+import android.app.job.JobScheduler
 import android.app.usage.UsageStatsManager
 import android.content.Context
 import android.net.ConnectivityManager
@@ -23,4 +24,8 @@ internal fun Context.getConnectivityManager(): ConnectivityManager {
 
 internal fun Context.getAlarmManager(): AlarmManager {
 	return getSystemService(Context.ALARM_SERVICE) as AlarmManager
+}
+
+internal fun Context.getJobScheduler(): JobScheduler {
+	return getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
 }

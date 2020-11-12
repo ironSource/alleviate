@@ -9,6 +9,10 @@
     <application>
         <service android:name="com.rotemati.foregroundsdk.foreground.ForegroundService" />
 
+        <service
+            android:name="com.rotemati.foregroundsdk.network.ConnectivityJobService"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
         <receiver
             android:name="com.rotemati.foregroundsdk.receivers.BootCompleteReceiver"
             android:exported="true">

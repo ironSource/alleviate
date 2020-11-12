@@ -3,17 +3,18 @@ package com.rotemati.foregroundsdk.foreground
 import android.app.Service
 import android.app.job.JobInfo
 import android.content.Intent
-import com.rotemati.foregroundsdk.EligibleForRescheduling
 import com.rotemati.foregroundsdk.extensions.scheduleForeground
 import com.rotemati.foregroundsdk.jobinfo.PendingJobsRepository
 import com.rotemati.foregroundsdk.jobinfo.foregroundJobInfo
 import com.rotemati.foregroundsdk.logger.SDKLogger
-import com.rotemati.foregroundsdk.network.ConnectivityEventsHandler
-import com.rotemati.foregroundsdk.network.ConnectivityEventsHandlerImpl
+import com.rotemati.foregroundsdk.network.ConnectivityHandler
+import com.rotemati.foregroundsdk.network.ConnectivityHandlerImpl
+import com.rotemati.foregroundsdk.network.ConnectivityJobService
 import com.rotemati.foregroundsdk.notification.DefaultNotificationDescriptorCreator
 import com.rotemati.foregroundsdk.notification.NotificationBuilder
 import com.rotemati.foregroundsdk.notification.NotificationChannelsCreator
 import com.rotemati.foregroundsdk.notification.NotificationDescriptor
+import com.rotemati.foregroundsdk.reschedule.EligibleForRescheduling
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,7 +25,7 @@ private const val JOB_ID_NOT_VALID: Int = -1
 
 class ForegroundService : Service() {
 
-	private lateinit var connectivityEventsHandler: ConnectivityEventsHandler
+	private lateinit var mConnectivityHandler: ConnectivityHandler
 	private lateinit var pendingJobsRepository: PendingJobsRepository
 	private lateinit var eligibleForRescheduling: EligibleForRescheduling
 	private lateinit var defaultNotificationDescriptorCreator: DefaultNotificationDescriptorCreator
@@ -32,8 +33,8 @@ class ForegroundService : Service() {
 
 	override fun onCreate() {
 		super.onCreate()
-		connectivityEventsHandler = ConnectivityEventsHandlerImpl(this)
-		connectivityEventsHandler.register()
+		mConnectivityHandler = ConnectivityHandlerImpl()
+		mConnectivityHandler.register(this)
 		pendingJobsRepository = PendingJobsRepository(this)
 		eligibleForRescheduling = EligibleForRescheduling()
 		defaultNotificationDescriptorCreator = DefaultNotificationDescriptorCreator()
@@ -45,31 +46,26 @@ class ForegroundService : Service() {
 		SDKLogger.logMethod()
 		intent?.let { nonNullIntent ->
 			val jobId = nonNullIntent.getIntExtra(EXTRA_JOB_ID, JOB_ID_NOT_VALID)
+
 			if (jobId == JOB_ID_NOT_VALID) {
 				onError("job id not valid")
-				return START_NOT_STICKY
-			}
-			if (!pendingJobsRepository.contains(jobId)) {
-				onError("job isn't in the repo")
 				return START_NOT_STICKY
 			}
 			val jobInfo = pendingJobsRepository.pendingForegroundJobs.find { it.id == jobId }
 
 			if (jobInfo == null) {
-				//todo decide what to do in this case
-				onError("jobInfo == null")
+				onError("job isn't in the repo")
 				return START_NOT_STICKY
 			}
 
 			if (!isConnectionAllowed(jobInfo.networkType)) {
-				//todo decide what to do - maybe start connectivity job service to wake up when there's internet connection
-				onError("connection type isn't allowed")
+				onError("Connection type isn't allowed")
+				SDKLogger.i("Scheduling connectivity job service")
+				ConnectivityJobService.schedule(this, jobInfo.persisted, jobInfo.networkType, jobInfo.id)
 				return START_NOT_STICKY
 			}
-			startForeground(
-					NOTIFICATION_ID,
-					notificationBuilder.build(jobInfo.notificationDescriptor)
-			)
+
+			startForeground(NOTIFICATION_ID, notificationBuilder.build(jobInfo.notificationDescriptor))
 
 			CoroutineScope(Dispatchers.IO).launch {
 				withTimeoutOrNull(jobInfo.timeout) {
@@ -117,19 +113,25 @@ class ForegroundService : Service() {
 	}
 
 	private fun isConnectionAllowed(networkType: Int): Boolean {
-		when (networkType) {
-			JobInfo.NETWORK_TYPE_ANY -> {
-				if (connectivityEventsHandler.isBlocked) {
-					SDKLogger.e("Required any network but network is blocked!")
+		if (networkType == JobInfo.NETWORK_TYPE_NONE) {
+			SDKLogger.i("Task doesn't require any network")
+			return true
+		} else {
+			if (networkType == JobInfo.NETWORK_TYPE_NOT_ROAMING && mConnectivityHandler.isRoaming(this)) {
+				SDKLogger.i("Task requires not roaming but in roaming")
+				return false
+			} else {
+				if (mConnectivityHandler.isBlocked) {
+					SDKLogger.i("Task requires network but network is blocked")
 					return false
 				}
-				if (!connectivityEventsHandler.isConnected(this)) {
-					SDKLogger.i("Required any network type but no internet connection!")
+				if (!mConnectivityHandler.isConnected(this)) {
+					SDKLogger.i("Task Requires network but no internet connection")
 					return false
 				}
 			}
+			return true
 		}
-		return true
 	}
 
 	override fun onBind(intent: Intent?): Nothing? = null

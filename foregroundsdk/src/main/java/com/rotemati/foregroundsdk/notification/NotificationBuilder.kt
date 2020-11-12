@@ -4,8 +4,6 @@ import android.app.Notification
 import android.content.Context
 import android.os.Build
 import androidx.core.app.NotificationCompat
-import com.rotemati.foregroundsdk.notification.NotificationChannelsCreator
-import com.rotemati.foregroundsdk.notification.NotificationDescriptor
 
 class NotificationBuilder(private val context: Context,
                           private val notificationChannelsCreator: NotificationChannelsCreator
