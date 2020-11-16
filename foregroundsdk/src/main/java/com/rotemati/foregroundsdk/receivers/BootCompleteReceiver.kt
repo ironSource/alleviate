@@ -7,7 +7,7 @@ import com.rotemati.foregroundsdk.foregroundtask.scheduleForeground
 import com.rotemati.foregroundsdk.foregroundtask.taskinfo.PendingTasksRepository
 import com.rotemati.foregroundsdk.logger.SDKLogger
 
-class BootCompleteReceiver : BroadcastReceiver() {
+internal class BootCompleteReceiver : BroadcastReceiver() {
 
 	override fun onReceive(context: Context, intent: Intent?) {
 		SDKLogger.logMethod()

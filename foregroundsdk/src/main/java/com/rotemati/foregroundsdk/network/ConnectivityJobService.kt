@@ -15,7 +15,7 @@ import com.rotemati.foregroundsdk.logger.SDKLogger
 private const val JOB_SERVICE_ID = 12
 private const val FOREGROUND_TASK_ID = "FOREGROUND_TASK_ID"
 
-class ConnectivityJobService : JobService() {
+internal class ConnectivityJobService : JobService() {
 
 	private lateinit var pendingTasksRepository: PendingTasksRepository
 	override fun onCreate() {

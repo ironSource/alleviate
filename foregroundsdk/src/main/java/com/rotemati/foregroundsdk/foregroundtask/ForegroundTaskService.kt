@@ -22,7 +22,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 private const val NOTIFICATION_ID: Int = 654321
 private const val JOB_ID_NOT_VALID: Int = -1
 
-class ForegroundService : Service() {
+internal class ForegroundTaskService : Service() {
 
 	private lateinit var mConnectivityHandler: ConnectivityHandler
 	private lateinit var pendingTasksRepository: PendingTasksRepository
@@ -87,7 +87,7 @@ class ForegroundService : Service() {
 							foregroundObtainer = jobInfo.foregroundObtainer
 						}
 						if (eligibleForRescheduling.isEligible(newJobInfo)) {
-							scheduleForeground(this@ForegroundService, newJobInfo)
+							scheduleForeground(this@ForegroundTaskService, newJobInfo)
 						} else {
 							SDKLogger.i("max retries reached - removing it from repo")
 							pendingTasksRepository.remove(jobInfo.id)

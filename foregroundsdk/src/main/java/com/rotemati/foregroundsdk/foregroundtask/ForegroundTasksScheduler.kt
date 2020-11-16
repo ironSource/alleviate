@@ -17,8 +17,8 @@ fun scheduleForeground(
 ) {
 
 	SDKLogger.d("new retry count: ${foregroundTaskInfo.retryCount}")
-	val intent = Intent(context, ForegroundService::class.java).apply {
-		putExtra(ForegroundService.EXTRA_TASK_ID, foregroundTaskInfo.id)
+	val intent = Intent(context, ForegroundTaskService::class.java).apply {
+		putExtra(ForegroundTaskService.EXTRA_TASK_ID, foregroundTaskInfo.id)
 	}
 
 	val foregroundServicePendingIntent = PendingIntent.getForegroundService(context, 0, intent, 0)

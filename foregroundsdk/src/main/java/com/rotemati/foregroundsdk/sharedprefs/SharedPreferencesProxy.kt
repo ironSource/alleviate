@@ -9,7 +9,7 @@ import com.rotemati.foregroundsdk.foregroundtask.ForegroundObtainer
 import com.rotemati.foregroundsdk.logger.SDKLogger
 import java.lang.reflect.Type
 
-class SharedPreferencesProxy(context: Context, prefName: String) {
+internal class SharedPreferencesProxy(context: Context, prefName: String) {
 	private val gson =
 			GsonBuilder().registerTypeAdapter(ForegroundObtainer::class.java, InterfaceAdapter())
 					.create()

@@ -6,7 +6,7 @@ import android.net.Network
 import com.rotemati.foregroundsdk.extensions.getConnectivityManager
 import com.rotemati.foregroundsdk.logger.SDKLogger
 
-class ConnectivityHandlerImpl : ConnectivityManager.NetworkCallback(), ConnectivityHandler {
+internal class ConnectivityHandlerImpl : ConnectivityManager.NetworkCallback(), ConnectivityHandler {
 
 	override fun onAvailable(network: Network) {
 		super.onAvailable(network)

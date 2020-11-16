@@ -6,13 +6,13 @@ import java.lang.reflect.Type
 private const val CLASSNAME = "CLASSNAME"
 private const val DATA = "DATA"
 
-class InterfaceAdapter : JsonSerializer<Any>, JsonDeserializer<Any> {
+internal class InterfaceAdapter : JsonSerializer<Any>, JsonDeserializer<Any> {
 
 	override fun serialize(
-            src: Any,
-            typeOfSrc: Type,
-            context: JsonSerializationContext
-    ): JsonElement {
+			src: Any,
+			typeOfSrc: Type,
+			context: JsonSerializationContext
+	): JsonElement {
 		val jsonObject = JsonObject()
 		jsonObject.addProperty(CLASSNAME, src.javaClass.name)
 		jsonObject.add(DATA, context.serialize(src))
@@ -20,10 +20,10 @@ class InterfaceAdapter : JsonSerializer<Any>, JsonDeserializer<Any> {
 	}
 
 	override fun deserialize(
-            json: JsonElement,
-            typeOfT: Type,
-            context: JsonDeserializationContext
-    ): Any {
+			json: JsonElement,
+			typeOfT: Type,
+			context: JsonDeserializationContext
+	): Any {
 		val jsonObject: JsonObject = json.asJsonObject
 		val prim = jsonObject[CLASSNAME] as JsonPrimitive
 		val className = prim.asString

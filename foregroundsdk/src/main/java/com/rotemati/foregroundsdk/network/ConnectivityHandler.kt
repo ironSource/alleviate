@@ -3,7 +3,7 @@ package com.rotemati.foregroundsdk.network
 import android.content.Context
 import com.rotemati.foregroundsdk.extensions.getConnectivityManager
 
-interface ConnectivityHandler {
+internal interface ConnectivityHandler {
 	fun register(context: Context)
 
 	fun unregister(context: Context)
