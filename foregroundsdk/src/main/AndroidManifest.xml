@@ -10,7 +10,7 @@
         <service android:name="com.rotemati.foregroundsdk.foregroundtask.ForegroundTaskService" />
 
         <service
-            android:name="com.rotemati.foregroundsdk.network.ConnectivityJobService"
+            android:name="com.rotemati.foregroundsdk.connectivity.ConnectivityJobService"
             android:permission="android.permission.BIND_JOB_SERVICE" />
 
         <receiver

@@ -10,33 +10,37 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.CoroutineContext
 
 class BucketPollerImpl(
 		private val context: Context,
 		private val bucketPollingDelay: Long,
+		private val timeOut: Long
 ) : BucketPoller {
 
-	private lateinit var coroutineContext: CoroutineContext
+	private var coroutineContext: CoroutineContext? = null
 
 	@RequiresApi(Build.VERSION_CODES.P)
 	override fun poll(): Flow<Int> {
 		return flow {
 			coroutineContext = currentCoroutineContext()
-			try {
-				while (true) {
-					val standbyBucket = context.getStandbyBucket()
-					SDKLogger.i("StandbyBucket: $standbyBucket")
-					emit(standbyBucket)
-					delay(bucketPollingDelay)
+			withTimeoutOrNull(timeOut) {
+				try {
+					while (true) {
+						val standbyBucket = context.getStandbyBucket()
+						SDKLogger.i("StandbyBucket: $standbyBucket")
+						emit(standbyBucket)
+						delay(bucketPollingDelay)
+					}
+				} catch (exception: Throwable) {
+					exception.message?.let { SDKLogger.e(it) }
 				}
-			} catch (exception: Throwable) {
-				exception.message?.let { SDKLogger.e(it) }
 			}
 		}
 	}
 
 	override fun stop() {
-		coroutineContext.cancel()
+		coroutineContext?.cancel()
 	}
 }

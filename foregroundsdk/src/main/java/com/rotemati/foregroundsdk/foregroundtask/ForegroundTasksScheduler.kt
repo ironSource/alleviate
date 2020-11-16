@@ -11,31 +11,33 @@ import com.rotemati.foregroundsdk.foregroundtask.taskinfo.latencyEpoch
 import com.rotemati.foregroundsdk.logger.SDKLogger
 import java.util.concurrent.TimeUnit
 
-fun scheduleForeground(
-		context: Context,
-		foregroundTaskInfo: ForegroundTaskInfo,
-) {
+class ForegroundTasksScheduler {
 
-	SDKLogger.d("new retry count: ${foregroundTaskInfo.retryCount}")
-	val intent = Intent(context, ForegroundTaskService::class.java).apply {
-		putExtra(ForegroundTaskService.EXTRA_TASK_ID, foregroundTaskInfo.id)
+	fun scheduleForeground(
+			context: Context,
+			foregroundTaskInfo: ForegroundTaskInfo,
+	) {
+		SDKLogger.d("new retry count: ${foregroundTaskInfo.retryCount}")
+		val intent = Intent(context, ForegroundTaskService::class.java).apply {
+			putExtra(ForegroundTaskService.EXTRA_TASK_ID, foregroundTaskInfo.id)
+		}
+
+		val foregroundServicePendingIntent = PendingIntent.getForegroundService(context, 0, intent, 0)
+
+		SDKLogger.i(
+				"Scheduling ForegroundJobService to run in " + TimeUnit.MILLISECONDS.toSeconds(
+						foregroundTaskInfo.minLatencyMillis
+				) + " seconds"
+		)
+
+		val pendingTasksRepository = PendingTasksRepository(context)
+		SDKLogger.i("Saving taskId: ${foregroundTaskInfo.id}")
+		pendingTasksRepository.save(foregroundTaskInfo)
+
+		context.getAlarmManager().set(
+				AlarmManager.RTC_WAKEUP,
+				foregroundTaskInfo.latencyEpoch(),
+				foregroundServicePendingIntent
+		)
 	}
-
-	val foregroundServicePendingIntent = PendingIntent.getForegroundService(context, 0, intent, 0)
-
-	SDKLogger.i(
-			"Scheduling ForegroundJobService to run in " + TimeUnit.MILLISECONDS.toSeconds(
-					foregroundTaskInfo.minLatencyMillis
-			) + " seconds"
-	)
-
-	val pendingTasksRepository = PendingTasksRepository(context)
-	SDKLogger.i("Saving taskId: ${foregroundTaskInfo.id}")
-	pendingTasksRepository.save(foregroundTaskInfo)
-
-	context.getAlarmManager().set(
-			AlarmManager.RTC_WAKEUP,
-			foregroundTaskInfo.latencyEpoch(),
-			foregroundServicePendingIntent
-	)
 }

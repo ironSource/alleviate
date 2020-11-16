@@ -4,7 +4,7 @@ import android.app.job.JobInfo
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import com.rotemati.foregroundsdk.foregroundtask.scheduleForeground
+import com.rotemati.foregroundsdk.foregroundtask.ForegroundTasksScheduler
 import com.rotemati.foregroundsdk.foregroundtask.taskinfo.foregroundTaskInfo
 import com.rotemati.foregroundsdk.notification.notificationDescriptor
 import com.rotemati.foregroundtesterapp.R
@@ -29,6 +29,6 @@ class WakeupBroadcastReceiver : BroadcastReceiver() {
 			rescheduleOnFail = true
 			maxRetries = 3
 		}
-		scheduleForeground(context, foregroundTaskInfo)
+		ForegroundTasksScheduler().scheduleForeground(context, foregroundTaskInfo)
 	}
 }

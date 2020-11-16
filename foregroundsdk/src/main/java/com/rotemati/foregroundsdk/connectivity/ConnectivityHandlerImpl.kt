@@ -1,4 +1,4 @@
-package com.rotemati.foregroundsdk.network
+package com.rotemati.foregroundsdk.connectivity
 
 import android.content.Context
 import android.net.ConnectivityManager

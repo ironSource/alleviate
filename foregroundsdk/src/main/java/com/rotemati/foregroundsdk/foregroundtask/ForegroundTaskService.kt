@@ -3,12 +3,12 @@ package com.rotemati.foregroundsdk.foregroundtask
 import android.app.Service
 import android.app.job.JobInfo
 import android.content.Intent
+import com.rotemati.foregroundsdk.connectivity.ConnectivityHandler
+import com.rotemati.foregroundsdk.connectivity.ConnectivityHandlerImpl
+import com.rotemati.foregroundsdk.connectivity.ConnectivityJobService
 import com.rotemati.foregroundsdk.foregroundtask.taskinfo.PendingTasksRepository
 import com.rotemati.foregroundsdk.foregroundtask.taskinfo.foregroundTaskInfo
 import com.rotemati.foregroundsdk.logger.SDKLogger
-import com.rotemati.foregroundsdk.network.ConnectivityHandler
-import com.rotemati.foregroundsdk.network.ConnectivityHandlerImpl
-import com.rotemati.foregroundsdk.network.ConnectivityJobService
 import com.rotemati.foregroundsdk.notification.DefaultNotificationDescriptorCreator
 import com.rotemati.foregroundsdk.notification.NotificationBuilder
 import com.rotemati.foregroundsdk.notification.NotificationChannelsCreator
@@ -24,6 +24,7 @@ private const val JOB_ID_NOT_VALID: Int = -1
 
 internal class ForegroundTaskService : Service() {
 
+	private lateinit var foregroundTasksScheduler: ForegroundTasksScheduler
 	private lateinit var mConnectivityHandler: ConnectivityHandler
 	private lateinit var pendingTasksRepository: PendingTasksRepository
 	private lateinit var eligibleForRescheduling: EligibleForRescheduling
@@ -32,6 +33,7 @@ internal class ForegroundTaskService : Service() {
 
 	override fun onCreate() {
 		super.onCreate()
+		foregroundTasksScheduler = ForegroundTasksScheduler()
 		mConnectivityHandler = ConnectivityHandlerImpl()
 		mConnectivityHandler.register(this)
 		pendingTasksRepository = PendingTasksRepository(this)
@@ -87,7 +89,7 @@ internal class ForegroundTaskService : Service() {
 							foregroundObtainer = jobInfo.foregroundObtainer
 						}
 						if (eligibleForRescheduling.isEligible(newJobInfo)) {
-							scheduleForeground(this@ForegroundTaskService, newJobInfo)
+							foregroundTasksScheduler.scheduleForeground(this@ForegroundTaskService, newJobInfo)
 						} else {
 							SDKLogger.i("max retries reached - removing it from repo")
 							pendingTasksRepository.remove(jobInfo.id)
