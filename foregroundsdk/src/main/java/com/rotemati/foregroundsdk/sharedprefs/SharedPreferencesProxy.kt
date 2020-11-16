@@ -4,8 +4,8 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonSyntaxException
-import com.rotemati.foregroundsdk.adapters.InterfaceAdapter
-import com.rotemati.foregroundsdk.foreground.ForegroundObtainer
+import com.rotemati.foregroundsdk.serialization.InterfaceAdapter
+import com.rotemati.foregroundsdk.foregroundtask.ForegroundObtainer
 import com.rotemati.foregroundsdk.logger.SDKLogger
 import java.lang.reflect.Type
 
@@ -18,14 +18,19 @@ class SharedPreferencesProxy(context: Context, prefName: String) {
 
 	fun setSharedPrefObject(key: String?, obj: Any?, shouldCommitImmediately: Boolean = false) {
 		requireNotNull(obj) { "Cannot put 'null' object into preferences" }
-		val str = convertObjectToJsonString(obj)
+		val str = gson.toJson(obj)
 		val editor: SharedPreferences.Editor = sharedPreferences.edit()
 		editor.putString(key, str)
-		doSaveEdits(editor, shouldCommitImmediately)
+		save(editor, shouldCommitImmediately)
 	}
 
 	fun <T> getSharedPrefObject(key: String, classType: Type): T? {
-		return convertJsonStringToObject(sharedPreferences.getString(key, null), classType)
+		return try {
+			gson.fromJson(sharedPreferences.getString(key, null), classType)
+		} catch (e: JsonSyntaxException) {
+			SDKLogger.e("Failed to retrieve " + classType + " from cache: " + e.message)
+			null
+		}
 	}
 
 	fun remove(key: String) = sharedPreferences.edit().remove(key).apply()
@@ -34,24 +39,11 @@ class SharedPreferencesProxy(context: Context, prefName: String) {
 
 	fun clear() = sharedPreferences.edit().clear().apply()
 
-	private fun doSaveEdits(editor: SharedPreferences.Editor, shouldCommitImmediately: Boolean) {
+	private fun save(editor: SharedPreferences.Editor, shouldCommitImmediately: Boolean) {
 		if (shouldCommitImmediately) {
 			editor.commit()
 		} else {
 			editor.apply()
-		}
-	}
-
-	private fun convertObjectToJsonString(obj: Any): String {
-		return gson.toJson(obj)
-	}
-
-	private fun <T> convertJsonStringToObject(jsonString: String?, classType: Type): T? {
-		return try {
-			gson.fromJson(jsonString, classType)
-		} catch (e: JsonSyntaxException) {
-			SDKLogger.e("Failed to retrieve " + classType + " from cache: " + e.message)
-			null
 		}
 	}
 }

@@ -1,11 +1,10 @@
-package com.rotemati.foregroundsdk.foreground
+package com.rotemati.foregroundsdk.foregroundtask
 
 import android.app.Service
 import android.app.job.JobInfo
 import android.content.Intent
-import com.rotemati.foregroundsdk.extensions.scheduleForeground
-import com.rotemati.foregroundsdk.jobinfo.PendingJobsRepository
-import com.rotemati.foregroundsdk.jobinfo.foregroundJobInfo
+import com.rotemati.foregroundsdk.foregroundtask.taskinfo.PendingTasksRepository
+import com.rotemati.foregroundsdk.foregroundtask.taskinfo.foregroundTaskInfo
 import com.rotemati.foregroundsdk.logger.SDKLogger
 import com.rotemati.foregroundsdk.network.ConnectivityHandler
 import com.rotemati.foregroundsdk.network.ConnectivityHandlerImpl
@@ -26,7 +25,7 @@ private const val JOB_ID_NOT_VALID: Int = -1
 class ForegroundService : Service() {
 
 	private lateinit var mConnectivityHandler: ConnectivityHandler
-	private lateinit var pendingJobsRepository: PendingJobsRepository
+	private lateinit var pendingTasksRepository: PendingTasksRepository
 	private lateinit var eligibleForRescheduling: EligibleForRescheduling
 	private lateinit var defaultNotificationDescriptorCreator: DefaultNotificationDescriptorCreator
 	private lateinit var notificationBuilder: NotificationBuilder
@@ -35,7 +34,7 @@ class ForegroundService : Service() {
 		super.onCreate()
 		mConnectivityHandler = ConnectivityHandlerImpl()
 		mConnectivityHandler.register(this)
-		pendingJobsRepository = PendingJobsRepository(this)
+		pendingTasksRepository = PendingTasksRepository(this)
 		eligibleForRescheduling = EligibleForRescheduling()
 		defaultNotificationDescriptorCreator = DefaultNotificationDescriptorCreator()
 		notificationBuilder = NotificationBuilder(this, NotificationChannelsCreator(this))
@@ -45,13 +44,13 @@ class ForegroundService : Service() {
 		super.onStartCommand(intent, flags, startId)
 		SDKLogger.logMethod()
 		intent?.let { nonNullIntent ->
-			val jobId = nonNullIntent.getIntExtra(EXTRA_JOB_ID, JOB_ID_NOT_VALID)
+			val jobId = nonNullIntent.getIntExtra(EXTRA_TASK_ID, JOB_ID_NOT_VALID)
 
 			if (jobId == JOB_ID_NOT_VALID) {
 				onError("job id not valid")
 				return START_NOT_STICKY
 			}
-			val jobInfo = pendingJobsRepository.pendingForegroundJobs.find { it.id == jobId }
+			val jobInfo = pendingTasksRepository.pendingForegroundTasks.find { it.id == jobId }
 
 			if (jobInfo == null) {
 				onError("job isn't in the repo")
@@ -71,9 +70,11 @@ class ForegroundService : Service() {
 				withTimeoutOrNull(jobInfo.timeout) {
 					try {
 						jobInfo.foregroundObtainer.onForegroundObtained()
+						SDKLogger.i("Task completed successfully - removing it from repo")
+						pendingTasksRepository.remove(jobInfo.id)
 					} catch (exception: Exception) {
 						exception.message?.let { SDKLogger.e(it) }
-						val newJobInfo = foregroundJobInfo {
+						val newJobInfo = foregroundTaskInfo {
 							id = jobInfo.id
 							networkType = jobInfo.networkType
 							persisted = jobInfo.persisted
@@ -88,8 +89,8 @@ class ForegroundService : Service() {
 						if (eligibleForRescheduling.isEligible(newJobInfo)) {
 							scheduleForeground(this@ForegroundService, newJobInfo)
 						} else {
-							SDKLogger.i("max retries reached - removing job from repo")
-							pendingJobsRepository.remove(jobInfo.id)
+							SDKLogger.i("max retries reached - removing it from repo")
+							pendingTasksRepository.remove(jobInfo.id)
 						}
 					} finally {
 						SDKLogger.i("Stopping foreground!")
@@ -137,6 +138,6 @@ class ForegroundService : Service() {
 	override fun onBind(intent: Intent?): Nothing? = null
 
 	companion object {
-		const val EXTRA_JOB_ID = "com.ironsource.foreground.EXTRA_JOB_ID"
+		const val EXTRA_TASK_ID = "com.ironsource.foreground.EXTRA_JOB_ID"
 	}
 }

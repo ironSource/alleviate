@@ -8,24 +8,24 @@ import android.content.ComponentName
 import android.content.Context
 import android.os.PersistableBundle
 import com.rotemati.foregroundsdk.extensions.getJobScheduler
-import com.rotemati.foregroundsdk.extensions.scheduleForeground
-import com.rotemati.foregroundsdk.jobinfo.PendingJobsRepository
+import com.rotemati.foregroundsdk.foregroundtask.scheduleForeground
+import com.rotemati.foregroundsdk.foregroundtask.taskinfo.PendingTasksRepository
 import com.rotemati.foregroundsdk.logger.SDKLogger
 
 private const val JOB_SERVICE_ID = 12
-private const val FOREGROUND_JOB_ID = "FOREGROUND_JOB_ID"
+private const val FOREGROUND_TASK_ID = "FOREGROUND_TASK_ID"
 
 class ConnectivityJobService : JobService() {
 
-	private lateinit var pendingJobsRepository: PendingJobsRepository
+	private lateinit var pendingTasksRepository: PendingTasksRepository
 	override fun onCreate() {
-		pendingJobsRepository = PendingJobsRepository(this)
+		pendingTasksRepository = PendingTasksRepository(this)
 	}
 
 	override fun onStartJob(params: JobParameters?): Boolean {
-		params?.extras?.getInt(FOREGROUND_JOB_ID)?.let { jobId ->
-			val jobInfo = pendingJobsRepository.pendingForegroundJobs.find { it.id == jobId }
-			jobInfo?.let {
+		params?.extras?.getInt(FOREGROUND_TASK_ID)?.let { taskId ->
+			val taskInfo = pendingTasksRepository.pendingForegroundTasks.find { it.id == taskId }
+			taskInfo?.let {
 				scheduleForeground(this, it)
 			}
 		}
@@ -37,7 +37,7 @@ class ConnectivityJobService : JobService() {
 	companion object {
 		fun schedule(context: Context, persisted: Boolean, networkType: Int, id: Int) {
 			val bundle = PersistableBundle().apply {
-				putInt(FOREGROUND_JOB_ID, id)
+				putInt(FOREGROUND_TASK_ID, id)
 			}
 			val jobInfoBuilder = JobInfo.Builder(JOB_SERVICE_ID, ComponentName(context.packageName, ConnectivityJobService::class.java.name)).setPersisted(persisted).setRequiredNetworkType(networkType).setExtras(bundle)
 			val result = context.getJobScheduler().schedule(jobInfoBuilder.build())

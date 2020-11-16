@@ -1,4 +1,4 @@
-package com.rotemati.foregroundsdk.adapters
+package com.rotemati.foregroundsdk.serialization
 
 import com.google.gson.*
 import java.lang.reflect.Type

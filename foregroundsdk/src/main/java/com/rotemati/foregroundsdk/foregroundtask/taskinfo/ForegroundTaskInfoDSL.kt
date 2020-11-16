@@ -1,9 +1,9 @@
-package com.rotemati.foregroundsdk.jobinfo
+package com.rotemati.foregroundsdk.foregroundtask.taskinfo
 
-import com.rotemati.foregroundsdk.foreground.ForegroundObtainer
+import com.rotemati.foregroundsdk.foregroundtask.ForegroundObtainer
 import com.rotemati.foregroundsdk.notification.NotificationDescriptor
 
-interface ForegroundJobInfoDSL {
+interface ForegroundTaskInfoDSL {
 	val id: Int
 	val networkType: Int
 	val persisted: Boolean
@@ -16,7 +16,7 @@ interface ForegroundJobInfoDSL {
 	val foregroundObtainer: ForegroundObtainer
 }
 
-class ForegroundJobInfoDSLImpl : ForegroundJobInfoDSL {
+class ForegroundTaskInfoDSLImpl : ForegroundTaskInfoDSL {
 	override var id: Int = 0
 	override var networkType: Int = 0
 	override var persisted: Boolean = false
@@ -28,10 +28,10 @@ class ForegroundJobInfoDSLImpl : ForegroundJobInfoDSL {
 	override var retryCount: Int = 0
 	override lateinit var foregroundObtainer: ForegroundObtainer
 
-	fun build() = ForegroundJobInfo(id, networkType, persisted, minLatencyMillis, notificationDescriptor, timeout, rescheduleOnFail, maxRetries, retryCount, foregroundObtainer)
+	fun build() = ForegroundTaskInfo(id, networkType, persisted, minLatencyMillis, notificationDescriptor, timeout, rescheduleOnFail, maxRetries, retryCount, foregroundObtainer)
 }
 
-fun foregroundJobInfo(block: ForegroundJobInfoDSLImpl.() -> Unit): ForegroundJobInfo {
-	return ForegroundJobInfoDSLImpl().apply(block).build()
+fun foregroundTaskInfo(block: ForegroundTaskInfoDSLImpl.() -> Unit): ForegroundTaskInfo {
+	return ForegroundTaskInfoDSLImpl().apply(block).build()
 }
 

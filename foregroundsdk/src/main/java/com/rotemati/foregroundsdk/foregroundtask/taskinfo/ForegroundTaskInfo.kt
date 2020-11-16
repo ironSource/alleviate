@@ -1,10 +1,10 @@
-package com.rotemati.foregroundsdk.jobinfo
+package com.rotemati.foregroundsdk.foregroundtask.taskinfo
 
-import com.rotemati.foregroundsdk.foreground.ForegroundObtainer
+import com.rotemati.foregroundsdk.foregroundtask.ForegroundObtainer
 import com.rotemati.foregroundsdk.notification.DefaultNotificationDescriptorCreator
 import com.rotemati.foregroundsdk.notification.NotificationDescriptor
 
-class ForegroundJobInfo(
+class ForegroundTaskInfo(
 		val id: Int,
 		val networkType: Int,
 		val persisted: Boolean,
@@ -17,4 +17,4 @@ class ForegroundJobInfo(
 		val foregroundObtainer: ForegroundObtainer
 )
 
-fun ForegroundJobInfo.latencyEpoch() = System.currentTimeMillis() + minLatencyMillis
+fun ForegroundTaskInfo.latencyEpoch() = System.currentTimeMillis() + minLatencyMillis

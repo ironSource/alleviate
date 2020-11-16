@@ -7,7 +7,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application>
-        <service android:name="com.rotemati.foregroundsdk.foreground.ForegroundService" />
+        <service android:name="com.rotemati.foregroundsdk.foregroundtask.ForegroundService" />
 
         <service
             android:name="com.rotemati.foregroundsdk.network.ConnectivityJobService"

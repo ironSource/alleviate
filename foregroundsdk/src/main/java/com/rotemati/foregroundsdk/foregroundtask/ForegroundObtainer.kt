@@ -1,4 +1,4 @@
-package com.rotemati.foregroundsdk.foreground
+package com.rotemati.foregroundsdk.foregroundtask
 
 import java.io.Serializable
 
