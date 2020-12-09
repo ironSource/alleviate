@@ -1,37 +1,30 @@
 package com.rotemati.foregroundsdk.foregroundtask.taskinfo
 
-import com.rotemati.foregroundsdk.foregroundtask.ForegroundObtainer
-import com.rotemati.foregroundsdk.notification.NotificationDescriptor
+import android.app.Notification
+import com.rotemati.foregroundsdk.foregroundtask.taskinfo.network.NetworkType
+import com.rotemati.foregroundsdk.foregroundtask.taskinfo.retry.RetryPolicy
 
-interface ForegroundTaskInfoDSL {
-	val id: Int
-	val networkType: Int
-	val persisted: Boolean
-	val minLatencyMillis: Long
-	val notificationDescriptor: NotificationDescriptor
-	val timeout: Long
-	val rescheduleOnFail: Boolean
-	val maxRetries: Int
-	val retryCount: Int
-	val foregroundObtainer: ForegroundObtainer
+class ForegroundTaskInfoDSL {
+
+	//		@Deprecated(level = DeprecationLevel.ERROR, message = "only set")
+//		get() = throw IllegalStateException("dsl")
+	var id: Int = -1
+	var networkType: NetworkType = NetworkType.None
+	var persisted: Boolean = false
+	var minLatencyMillis: Long = 0
+	var notification: Notification? = null
+	var timeoutMillis: Long = Long.MAX_VALUE
+	var retryPolicy: RetryPolicy = RetryPolicy.NoRetry
+	var retryCount: Int = 0
+
+	fun build(): ForegroundTaskInfo {
+		if (notification == null) {
+			throw IllegalArgumentException("Notification must be set!")
+		}
+		return ForegroundTaskInfo(id, networkType, persisted, minLatencyMillis, notification!!, timeoutMillis, retryPolicy)
+	}
 }
 
-class ForegroundTaskInfoDSLImpl : ForegroundTaskInfoDSL {
-	override var id: Int = 0
-	override var networkType: Int = 0
-	override var persisted: Boolean = false
-	override var minLatencyMillis: Long = 0
-	override lateinit var notificationDescriptor: NotificationDescriptor
-	override var timeout: Long = 0
-	override var rescheduleOnFail: Boolean = false
-	override var maxRetries: Int = 0
-	override var retryCount: Int = 0
-	override lateinit var foregroundObtainer: ForegroundObtainer
-
-	fun build() = ForegroundTaskInfo(id, networkType, persisted, minLatencyMillis, notificationDescriptor, timeout, rescheduleOnFail, maxRetries, retryCount, foregroundObtainer)
+fun foregroundTaskInfo(block: ForegroundTaskInfoDSL.() -> Unit): ForegroundTaskInfo {
+	return ForegroundTaskInfoDSL().apply(block).build()
 }
-
-fun foregroundTaskInfo(block: ForegroundTaskInfoDSLImpl.() -> Unit): ForegroundTaskInfo {
-	return ForegroundTaskInfoDSLImpl().apply(block).build()
-}
-

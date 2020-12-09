@@ -5,24 +5,40 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import com.rotemati.foregroundsdk.extensions.getAlarmManager
+import com.rotemati.foregroundsdk.foregroundtask.repositories.PendingTasksRepository
 import com.rotemati.foregroundsdk.foregroundtask.taskinfo.ForegroundTaskInfo
-import com.rotemati.foregroundsdk.foregroundtask.taskinfo.PendingTasksRepository
 import com.rotemati.foregroundsdk.foregroundtask.taskinfo.latencyEpoch
 import com.rotemati.foregroundsdk.logger.SDKLogger
 import java.util.concurrent.TimeUnit
 
-class ForegroundTasksScheduler {
+class ForegroundTasksScheduler(private val context: Context) {
+
+	private val pendingTasksRepository = PendingTasksRepository(context)
 
 	fun scheduleForeground(
-			context: Context,
+			className: Class<*>,
 			foregroundTaskInfo: ForegroundTaskInfo,
 	) {
-		SDKLogger.d("new retry count: ${foregroundTaskInfo.retryCount}")
-		val intent = Intent(context, ForegroundTaskService::class.java).apply {
-			putExtra(ForegroundTaskService.EXTRA_TASK_ID, foregroundTaskInfo.id)
+
+		val alreadyScheduled = PendingIntent.getBroadcast(context, 0,
+				Intent("com.ironsource.scheduleForeground"),
+				PendingIntent.FLAG_NO_CREATE) != null
+
+		if (alreadyScheduled) {
+			SDKLogger.i("Foreground task already scheduled")
+			return
+		}
+		if (className !is BaseForegroundTaskService) {
+			SDKLogger.e("Component should extend from CoroutineForegroundTaskService or ForegroundTaskService")
+			return
 		}
 
-		val foregroundServicePendingIntent = PendingIntent.getForegroundService(context, 0, intent, 0)
+		val intent = Intent(context, className).apply {
+			putExtra(BaseForegroundTaskService.EXTRA_TASK_ID, foregroundTaskInfo.id)
+		}
+
+		val foregroundServicePendingIntent =
+				PendingIntent.getForegroundService(context, 0, intent, 0)
 
 		SDKLogger.i(
 				"Scheduling ForegroundJobService to run in " + TimeUnit.MILLISECONDS.toSeconds(
@@ -30,14 +46,24 @@ class ForegroundTasksScheduler {
 				) + " seconds"
 		)
 
-		val pendingTasksRepository = PendingTasksRepository(context)
 		SDKLogger.i("Saving taskId: ${foregroundTaskInfo.id}")
-		pendingTasksRepository.save(foregroundTaskInfo)
+		pendingTasksRepository.save(foregroundTaskInfo, className.toString())
 
 		context.getAlarmManager().set(
 				AlarmManager.RTC_WAKEUP,
 				foregroundTaskInfo.latencyEpoch(),
 				foregroundServicePendingIntent
 		)
+	}
+
+	fun reschedule(foregroundTaskInfo: ForegroundTaskInfo) {
+		if (pendingTasksRepository.contains(foregroundTaskInfo.id)) {
+			SDKLogger.e("Foreground task cannot be rescheduled. There's no saved component")
+			return
+		}
+
+		pendingTasksRepository.getComponent(foregroundTaskInfo.id)?.let { className ->
+			scheduleForeground(className::class.java, foregroundTaskInfo)
+		}
 	}
 }

@@ -9,38 +9,38 @@ import kotlinx.coroutines.launch
 
 class MainViewModel(private val repository: GitHubRepo) : ViewModel() {
 
-    companion object {
-        /**
-         * Factory for creating [MainViewModel]
-         *
-         * @param arg the repository to pass to [MainViewModel]
-         */
-        val FACTORY = singleArgViewModelFactory(::MainViewModel)
-    }
+	companion object {
+		/**
+		 * Factory for creating [MainViewModel]
+		 *
+		 * @param arg the repository to pass to [MainViewModel]
+		 */
+		val FACTORY = singleArgViewModelFactory(::MainViewModel)
+	}
 
-    private val _spinner = MutableLiveData(false)
-    val spinner: LiveData<Boolean>
-        get() = _spinner
+	private val _spinner = MutableLiveData(false)
+	val spinner: LiveData<Boolean>
+		get() = _spinner
 
-    private val _snackBar = MutableLiveData<String?>()
-    val snackbar: LiveData<String?>
-        get() = _snackBar
+	private val _snackBar = MutableLiveData<String?>()
+	val snackbar: LiveData<String?>
+		get() = _snackBar
 
-    fun onSnackbarShown() {
-        _snackBar.value = null
-    }
+	fun onSnackbarShown() {
+		_snackBar.value = null
+	}
 
-    fun onFetchReposButtonClicked() {
-        viewModelScope.launch {
-            try {
-                _spinner.value = true
-                val repos = repository.getRepos()
-                _snackBar.value = "${repos.size} repos fetched"
-            } catch (exception: Exception) {
-                _snackBar.value = exception.message
-            } finally {
-                _spinner.value = false
-            }
-        }
-    }
+	fun onFetchReposButtonClicked() {
+		viewModelScope.launch {
+			try {
+				_spinner.value = true
+				val repos = repository.getReposSuspend()
+				_snackBar.value = "${repos.size} repos fetched"
+			} catch (exception: Exception) {
+				_snackBar.value = exception.message
+			} finally {
+				_spinner.value = false
+			}
+		}
+	}
 }

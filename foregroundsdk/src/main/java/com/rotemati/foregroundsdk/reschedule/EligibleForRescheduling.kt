@@ -1,12 +1,18 @@
 package com.rotemati.foregroundsdk.reschedule
 
 import com.rotemati.foregroundsdk.foregroundtask.taskinfo.ForegroundTaskInfo
+import com.rotemati.foregroundsdk.foregroundtask.taskinfo.retry.RetryPolicy
 import com.rotemati.foregroundsdk.logger.SDKLogger
 
-internal class EligibleForRescheduling {
+class EligibleForRescheduling {
 	fun isEligible(taskInfo: ForegroundTaskInfo): Boolean {
-		return (taskInfo.rescheduleOnFail && taskInfo.retryCount < taskInfo.maxRetries).also {
-			SDKLogger.i("Task ${taskInfo.id} eligible: $it")
+		return when (taskInfo.retryPolicy) {
+			is RetryPolicy.Retry -> {
+				(taskInfo.retryPolicy.rescheduleOnFail && taskInfo.retryCount < taskInfo.retryPolicy.maxRetries).also {
+					SDKLogger.i("Task ${taskInfo.id} eligible: $it")
+				}
+			}
+			is RetryPolicy.NoRetry -> false
 		}
 	}
 }
