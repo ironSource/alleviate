@@ -1,7 +1,8 @@
-package com.rotemati.foregroundtesterapp
+package com.rotemati.foregroundtesterapp.activities
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.rotemati.foregroundtesterapp.R
 import com.rotemati.foregroundtesterapp.ui.main.MainFragment
 
 class MainActivity : AppCompatActivity() {

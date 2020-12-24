@@ -1,8 +1,6 @@
 package com.rotemati.foregroundsdk.foregroundtask.taskinfo
 
-import android.app.Notification
 import com.rotemati.foregroundsdk.foregroundtask.taskinfo.network.NetworkType
-import com.rotemati.foregroundsdk.foregroundtask.taskinfo.retry.RetryPolicy
 
 class ForegroundTaskInfoDSL {
 
@@ -12,16 +10,10 @@ class ForegroundTaskInfoDSL {
 	var networkType: NetworkType = NetworkType.None
 	var persisted: Boolean = false
 	var minLatencyMillis: Long = 0
-	var notification: Notification? = null
 	var timeoutMillis: Long = Long.MAX_VALUE
-	var retryPolicy: RetryPolicy = RetryPolicy.NoRetry
-	var retryCount: Int = 0
 
 	fun build(): ForegroundTaskInfo {
-		if (notification == null) {
-			throw IllegalArgumentException("Notification must be set!")
-		}
-		return ForegroundTaskInfo(id, networkType, persisted, minLatencyMillis, notification!!, timeoutMillis, retryPolicy)
+		return ForegroundTaskInfo(id, networkType, persisted, minLatencyMillis, timeoutMillis)
 	}
 }
 

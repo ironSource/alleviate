@@ -7,8 +7,6 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application>
-        <service android:name="com.rotemati.foregroundsdk.foregroundtask.ForegroundTaskService" />
-
         <service
             android:name="com.rotemati.foregroundsdk.connectivity.ConnectivityJobService"
             android:permission="android.permission.BIND_JOB_SERVICE" />
@@ -18,6 +16,13 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name="com.rotemati.foregroundsdk.receivers.MyPackageReplacedReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>
         </receiver>
 

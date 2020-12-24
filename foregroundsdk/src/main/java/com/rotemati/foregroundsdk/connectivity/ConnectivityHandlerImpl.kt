@@ -3,10 +3,14 @@ package com.rotemati.foregroundsdk.connectivity
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
+import com.rotemati.foregroundsdk.ForegroundSDK
 import com.rotemati.foregroundsdk.extensions.getConnectivityManager
-import com.rotemati.foregroundsdk.logger.SDKLogger
+import com.rotemati.foregroundsdk.logger.ForegroundLogger
+import com.rotemati.foregroundsdk.logger.LoggerWrapper
 
 internal class ConnectivityHandlerImpl : ConnectivityManager.NetworkCallback(), ConnectivityHandler {
+
+	private val logger: ForegroundLogger = LoggerWrapper(ForegroundSDK.foregroundLogger)
 
 	override fun onAvailable(network: Network) {
 		super.onAvailable(network)
@@ -28,12 +32,10 @@ internal class ConnectivityHandlerImpl : ConnectivityManager.NetworkCallback(), 
 	override var isBlocked = false
 
 	override fun register(context: Context) {
-		SDKLogger.logMethod()
 		context.getConnectivityManager().registerDefaultNetworkCallback(this)
 	}
 
 	override fun unregister(context: Context) {
-		SDKLogger.logMethod()
 		context.getConnectivityManager().unregisterNetworkCallback(this)
 	}
 }

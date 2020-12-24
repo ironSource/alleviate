@@ -9,15 +9,15 @@ import com.rotemati.foregroundsdk.foregroundtask.repositories.PendingTasksReposi
 import com.rotemati.foregroundsdk.logger.ForegroundLogger
 import com.rotemati.foregroundsdk.logger.LoggerWrapper
 
-internal class BootCompleteReceiver : BroadcastReceiver() {
+class MyPackageReplacedReceiver : BroadcastReceiver() {
 
 	private val logger: ForegroundLogger = LoggerWrapper(ForegroundSDK.foregroundLogger)
 
 	override fun onReceive(context: Context, intent: Intent?) {
 		val pendingTasksRepository = PendingTasksRepository(context)
-		val persistTasks = pendingTasksRepository.foregroundTasks.filter { it.persisted }
 		val foregroundTasksScheduler = ForegroundTasksScheduler(context)
-		persistTasks.forEach {
+		pendingTasksRepository.foregroundTasks.forEach {
+			logger.d("Rescheduling $it")
 			foregroundTasksScheduler.reschedule(it)
 		}
 	}

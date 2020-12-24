@@ -4,10 +4,15 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
-import com.rotemati.foregroundsdk.logger.SDKLogger
+import com.rotemati.foregroundsdk.ForegroundSDK
+import com.rotemati.foregroundsdk.logger.ForegroundLogger
+import com.rotemati.foregroundsdk.logger.LoggerWrapper
 import java.lang.reflect.Type
 
 internal class SharedPreferencesProxy(context: Context, prefName: String) {
+
+	private val logger: ForegroundLogger = LoggerWrapper(ForegroundSDK.foregroundLogger)
+
 	private val gson = Gson()
 	private val sharedPreferences = context.getSharedPreferences(prefName, Context.MODE_PRIVATE)
 
@@ -23,7 +28,7 @@ internal class SharedPreferencesProxy(context: Context, prefName: String) {
 		return try {
 			gson.fromJson(sharedPreferences.getString(key, null), classType)
 		} catch (e: JsonSyntaxException) {
-			SDKLogger.e("Failed to retrieve " + classType + " from cache: " + e.message)
+			logger.e("Failed to retrieve " + classType + " from cache: " + e.message)
 			null
 		}
 	}
