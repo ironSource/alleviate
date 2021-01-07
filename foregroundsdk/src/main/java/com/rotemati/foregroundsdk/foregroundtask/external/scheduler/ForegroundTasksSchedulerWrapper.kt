@@ -1,7 +1,7 @@
 package com.rotemati.foregroundsdk.foregroundtask.external.scheduler
 
-import android.content.Context
 import com.rotemati.foregroundsdk.foregroundtask.external.ForegroundSDK
+import com.rotemati.foregroundsdk.foregroundtask.external.ForegroundSDK.context
 import com.rotemati.foregroundsdk.foregroundtask.external.logger.ForegroundLogger
 import com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.ForegroundTaskInfo
 import com.rotemati.foregroundsdk.foregroundtask.internal.logger.LoggerWrapper
@@ -13,10 +13,10 @@ import com.rotemati.foregroundsdk.foregroundtask.internal.scheduler.ForegroundTa
 import java.util.concurrent.TimeUnit
 
 //think about testing - mock the scheduler
-class ForegroundTasksSchedulerWrapper(private val context: Context) {
+class ForegroundTasksSchedulerWrapper {
 
 	private val logger: ForegroundLogger = LoggerWrapper(ForegroundSDK.foregroundLogger)
-	private val pendingTasksRepository = PendingTasksRepository(context)
+	private val pendingTasksRepository = PendingTasksRepository()
 	private val foregroundTasksScheduler: ForegroundTasksScheduler = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
 		ForegroundTasksSchedulerPost26(context)
 	} else {
@@ -35,7 +35,7 @@ class ForegroundTasksSchedulerWrapper(private val context: Context) {
 //			return
 //		}
 		logger.i("Saving taskId: ${foregroundTaskInfo.id}")
-		pendingTasksRepository.save(TaskInfoSpec(foregroundTaskInfo, className.toString()))
+		pendingTasksRepository.save(TaskInfoSpec(foregroundTaskInfo, className.name))
 
 		logger.i("Scheduling ForegroundJobService to run in " + TimeUnit.MILLISECONDS.toSeconds(foregroundTaskInfo.minLatencyMillis) + " seconds")
 
@@ -49,7 +49,6 @@ class ForegroundTasksSchedulerWrapper(private val context: Context) {
 			return
 		}
 		logger.i("Rescheduling task id: ${foregroundTaskInfo.id}")
-		foregroundTasksScheduler.schedule(Class.forName(taskInfoSpec.componentName), foregroundTaskInfo)
 		scheduleForegroundTask(Class.forName(taskInfoSpec.componentName), foregroundTaskInfo)
 	}
 }

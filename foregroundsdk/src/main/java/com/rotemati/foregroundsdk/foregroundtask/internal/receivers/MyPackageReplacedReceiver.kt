@@ -14,8 +14,8 @@ internal class MyPackageReplacedReceiver : BroadcastReceiver() {
 	private val logger: ForegroundLogger = LoggerWrapper(ForegroundSDK.foregroundLogger)
 
 	override fun onReceive(context: Context, intent: Intent?) {
-		val pendingTasksRepository = PendingTasksRepository(context)
-		val foregroundTasksScheduler = ForegroundTasksSchedulerWrapper(context)
+		val pendingTasksRepository = PendingTasksRepository()
+		val foregroundTasksScheduler = ForegroundTasksSchedulerWrapper()
 		pendingTasksRepository.getAll { tasks ->
 			tasks.forEach {
 				logger.d("Rescheduling $it")

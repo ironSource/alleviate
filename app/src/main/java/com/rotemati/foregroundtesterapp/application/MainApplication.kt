@@ -10,7 +10,7 @@ class MainApplication : Application() {
 	override fun onCreate() {
 
 		super.onCreate()
-
+		ForegroundSDK.context = this
 		ForegroundSDK.foregroundLogger = object : ForegroundLogger {
 			override val logsEnabled = BuildConfig.DEBUG
 			override val tag = "SAMPLE APP"

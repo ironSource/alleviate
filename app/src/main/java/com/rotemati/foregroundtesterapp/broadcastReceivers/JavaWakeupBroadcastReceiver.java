@@ -24,6 +24,6 @@ public class JavaWakeupBroadcastReceiver
 		                                                                              .timeoutMillis(TimeUnit.SECONDS.toMillis(15))
 		                                                                              .build();
 
-		new ForegroundTasksSchedulerWrapper(context).scheduleForegroundTask(ReposForegroundService.class, foregroundTaskInfo);
+		new ForegroundTasksSchedulerWrapper().scheduleForegroundTask(ReposForegroundService.class, foregroundTaskInfo);
 	}
 }

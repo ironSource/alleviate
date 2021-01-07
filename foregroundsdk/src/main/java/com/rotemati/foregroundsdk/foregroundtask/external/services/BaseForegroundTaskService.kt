@@ -37,10 +37,10 @@ abstract class BaseForegroundTaskService : Service() {
 
 	override fun onCreate() {
 		super.onCreate()
-		foregroundTasksSchedulerWrapper = ForegroundTasksSchedulerWrapper(this)
+		foregroundTasksSchedulerWrapper = ForegroundTasksSchedulerWrapper()
 		mConnectivityHandler = ConnectivityHandlerImpl()
 		mConnectivityHandler.register(this)
-		pendingTasksRepository = PendingTasksRepository(this)
+		pendingTasksRepository = PendingTasksRepository()
 		defaultNotificationCreator = DefaultNotificationCreator()
 	}
 
@@ -92,7 +92,7 @@ abstract class BaseForegroundTaskService : Service() {
 				timeoutMillis = foregroundTaskInfo.timeoutMillis,
 				retryCount = foregroundTaskInfo.retryCount + 1
 		)
-		foregroundTasksSchedulerWrapper.scheduleForegroundTask(javaClass, foregroundTaskInfo)
+		foregroundTasksSchedulerWrapper.reschedule(foregroundTaskInfo)
 		logger.d("Stopping foreground")
 		stopForeground(true)
 		stopSelf()

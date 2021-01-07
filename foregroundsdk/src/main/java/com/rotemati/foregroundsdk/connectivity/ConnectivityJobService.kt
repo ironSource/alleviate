@@ -26,8 +26,8 @@ internal class ConnectivityJobService : JobService() {
 	private val logger: ForegroundLogger = LoggerWrapper(ForegroundSDK.foregroundLogger)
 
 	override fun onCreate() {
-		foregroundTasksSchedulerWrapper = ForegroundTasksSchedulerWrapper(this)
-		pendingTasksRepository = PendingTasksRepository(this)
+		foregroundTasksSchedulerWrapper = ForegroundTasksSchedulerWrapper()
+		pendingTasksRepository = PendingTasksRepository()
 	}
 
 	override fun onStartJob(params: JobParameters?): Boolean {

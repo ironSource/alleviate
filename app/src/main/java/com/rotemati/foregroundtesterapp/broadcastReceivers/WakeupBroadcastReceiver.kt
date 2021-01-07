@@ -17,7 +17,7 @@ class WakeupBroadcastReceiver : BroadcastReceiver() {
 			minLatencyMillis = TimeUnit.SECONDS.toMillis(0)
 			timeoutMillis = TimeUnit.SECONDS.toMillis(15)
 		}
-		ForegroundTasksSchedulerWrapper(context).scheduleForegroundTask(
+		ForegroundTasksSchedulerWrapper().scheduleForegroundTask(
 				ReposForegroundService::class.java,
 				foregroundTaskInfo
 		)

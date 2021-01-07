@@ -9,10 +9,10 @@ import com.rotemati.foregroundsdk.foregroundtask.internal.repositories.PendingTa
 internal class BootCompleteReceiver : BroadcastReceiver() {
 
 	override fun onReceive(context: Context, intent: Intent?) {
-		val pendingTasksRepository = PendingTasksRepository(context)
+		val pendingTasksRepository = PendingTasksRepository()
 		pendingTasksRepository.getAll { tasks ->
 			val persistedTasks = tasks.filter { it.persisted }
-			val foregroundTasksScheduler = ForegroundTasksSchedulerWrapper(context)
+			val foregroundTasksScheduler = ForegroundTasksSchedulerWrapper()
 			persistedTasks.forEach {
 				foregroundTasksScheduler.reschedule(it)
 			}
