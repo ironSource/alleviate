@@ -26,7 +26,6 @@
 
         <service android:name=".services.ReposForegroundService" />
 
-        <service android:name=".services.CoroutineRepoForegroundService" />
     </application>
 
 </manifest>

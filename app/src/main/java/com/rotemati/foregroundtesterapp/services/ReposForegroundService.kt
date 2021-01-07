@@ -3,10 +3,10 @@ package com.rotemati.foregroundtesterapp.services
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.Context
 import androidx.core.app.NotificationCompat
-import com.rotemati.foregroundsdk.extensions.getNotificationManager
-import com.rotemati.foregroundsdk.foregroundtask.services.ForegroundTaskService
-import com.rotemati.foregroundsdk.foregroundtask.taskinfo.result.Result
+import com.rotemati.foregroundsdk.foregroundtask.external.services.ForegroundTaskService
+import com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.result.Result
 import com.rotemati.foregroundtesterapp.R
 import com.rotemati.foregroundtesterapp.logger.TesterAppLogger
 import com.rotemati.foregroundtesterapp.model.GitHubRepo
@@ -17,10 +17,10 @@ class ReposForegroundService : ForegroundTaskService() {
 	override fun getNotification(): Notification {
 		// create channel
 		val channelId = "kotlin channel"
-		val notificationChannel =
-				NotificationChannel(channelId, channelId, NotificationManager.IMPORTANCE_DEFAULT)
+		val notificationChannel = NotificationChannel(channelId, channelId, NotificationManager.IMPORTANCE_DEFAULT)
 		notificationChannel.setSound(null, null)
-		this.getNotificationManager().createNotificationChannel(notificationChannel)
+		val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+		notificationManager.createNotificationChannel(notificationChannel)
 
 		return NotificationCompat.Builder(this, channelId)
 				.setContentTitle("ReposForegroundService Title")

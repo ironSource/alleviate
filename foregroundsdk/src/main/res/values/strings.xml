@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="channel_general_updates">General updates</string>
+    <string name="default_foreground_notification_channel_id">Process updates</string>
     <string name="default_foreground_notification_title">Process updates</string>
     <string name="default_foreground_notification_body">Initializing the experience</string>
 </resources>

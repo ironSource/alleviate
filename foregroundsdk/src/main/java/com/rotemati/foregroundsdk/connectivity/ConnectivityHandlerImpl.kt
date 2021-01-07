@@ -3,10 +3,10 @@ package com.rotemati.foregroundsdk.connectivity
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
-import com.rotemati.foregroundsdk.ForegroundSDK
-import com.rotemati.foregroundsdk.extensions.getConnectivityManager
-import com.rotemati.foregroundsdk.logger.ForegroundLogger
-import com.rotemati.foregroundsdk.logger.LoggerWrapper
+import com.rotemati.foregroundsdk.foregroundtask.external.ForegroundSDK
+import com.rotemati.foregroundsdk.foregroundtask.internal.extensions.getConnectivityManager
+import com.rotemati.foregroundsdk.foregroundtask.external.logger.ForegroundLogger
+import com.rotemati.foregroundsdk.foregroundtask.internal.logger.LoggerWrapper
 
 internal class ConnectivityHandlerImpl : ConnectivityManager.NetworkCallback(), ConnectivityHandler {
 

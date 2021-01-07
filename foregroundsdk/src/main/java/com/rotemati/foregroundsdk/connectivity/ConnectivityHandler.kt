@@ -1,7 +1,7 @@
 package com.rotemati.foregroundsdk.connectivity
 
 import android.content.Context
-import com.rotemati.foregroundsdk.extensions.getConnectivityManager
+import com.rotemati.foregroundsdk.foregroundtask.internal.extensions.getConnectivityManager
 
 internal interface ConnectivityHandler {
 	fun register(context: Context)

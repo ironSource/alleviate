@@ -12,7 +12,7 @@
             android:permission="android.permission.BIND_JOB_SERVICE" />
 
         <receiver
-            android:name="com.rotemati.foregroundsdk.receivers.BootCompleteReceiver"
+            android:name="com.rotemati.foregroundsdk.foregroundtask.internal.receivers.BootCompleteReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -20,7 +20,7 @@
         </receiver>
 
         <receiver
-            android:name="com.rotemati.foregroundsdk.receivers.MyPackageReplacedReceiver">
+            android:name="com.rotemati.foregroundsdk.foregroundtask.internal.receivers.MyPackageReplacedReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>

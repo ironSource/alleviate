@@ -2,8 +2,8 @@ package com.rotemati.foregroundtesterapp.application
 
 import android.app.Application
 import android.util.Log
-import com.rotemati.foregroundsdk.ForegroundSDK
-import com.rotemati.foregroundsdk.logger.ForegroundLogger
+import com.rotemati.foregroundsdk.foregroundtask.external.ForegroundSDK
+import com.rotemati.foregroundsdk.foregroundtask.external.logger.ForegroundLogger
 import com.rotemati.foregroundtesterapp.BuildConfig
 
 class MainApplication : Application() {

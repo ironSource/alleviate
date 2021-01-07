@@ -4,10 +4,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.rotemati.foregroundsdk.foregroundtask.ForegroundTasksScheduler;
-import com.rotemati.foregroundsdk.foregroundtask.taskinfo.ForegroundTaskInfo;
-import com.rotemati.foregroundsdk.foregroundtask.taskinfo.network.NetworkType;
-import com.rotemati.foregroundtesterapp.services.CoroutineRepoForegroundService;
+import com.rotemati.foregroundsdk.foregroundtask.external.scheduler.ForegroundTasksSchedulerWrapper;
+import com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.ForegroundTaskInfo;
+import com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.network.NetworkType;
+import com.rotemati.foregroundtesterapp.services.ReposForegroundService;
 
 import java.util.concurrent.TimeUnit;
 
@@ -24,6 +24,6 @@ public class JavaWakeupBroadcastReceiver
 		                                                                              .timeoutMillis(TimeUnit.SECONDS.toMillis(15))
 		                                                                              .build();
 
-		new ForegroundTasksScheduler(context).scheduleForeground(CoroutineRepoForegroundService.class, foregroundTaskInfo);
+		new ForegroundTasksSchedulerWrapper(context).scheduleForegroundTask(ReposForegroundService.class, foregroundTaskInfo);
 	}
 }
