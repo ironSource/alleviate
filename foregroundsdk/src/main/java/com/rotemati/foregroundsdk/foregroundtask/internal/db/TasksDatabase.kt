@@ -6,6 +6,6 @@ import androidx.room.TypeConverters
 
 @Database(entities = [ForegroundTaskInfoDBItem::class], version = 1)
 @TypeConverters(Converters::class)
-abstract class TasksDatabase : RoomDatabase() {
+internal abstract class TasksDatabase : RoomDatabase() {
 	abstract fun foregroundTaskInfoDao(): ForegroundTaskInfoDao
 }

@@ -1,16 +1,14 @@
-package com.rotemati.foregroundsdk.connectivity
+package com.rotemati.foregroundsdk.foregroundtask.internal.connectivity
 
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
-import com.rotemati.foregroundsdk.foregroundtask.external.ForegroundSDK
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.rotemati.foregroundsdk.foregroundtask.internal.extensions.getConnectivityManager
-import com.rotemati.foregroundsdk.foregroundtask.external.logger.ForegroundLogger
-import com.rotemati.foregroundsdk.foregroundtask.internal.logger.LoggerWrapper
 
-internal class ConnectivityHandlerImpl : ConnectivityManager.NetworkCallback(), ConnectivityHandler {
-
-	private val logger: ForegroundLogger = LoggerWrapper(ForegroundSDK.foregroundLogger)
+@RequiresApi(Build.VERSION_CODES.N)
+internal class ConnectivityHandlerImplPost24 : ConnectivityManager.NetworkCallback(), ConnectivityHandler {
 
 	override fun onAvailable(network: Network) {
 		super.onAvailable(network)

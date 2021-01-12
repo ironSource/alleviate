@@ -8,18 +8,19 @@ import com.rotemati.foregroundsdk.foregroundtask.external.logger.ForegroundLogge
 import com.rotemati.foregroundsdk.foregroundtask.external.scheduler.ForegroundTasksSchedulerWrapper
 import com.rotemati.foregroundsdk.foregroundtask.internal.logger.LoggerWrapper
 import com.rotemati.foregroundsdk.foregroundtask.internal.repositories.PendingTasksRepository
+import kotlin.concurrent.thread
 
 internal class MyPackageReplacedReceiver : BroadcastReceiver() {
 
 	private val logger: ForegroundLogger = LoggerWrapper(ForegroundSDK.foregroundLogger)
+	private val foregroundTasksSchedulerWrapper = ForegroundTasksSchedulerWrapper()
 
 	override fun onReceive(context: Context, intent: Intent?) {
-		val pendingTasksRepository = PendingTasksRepository()
-		val foregroundTasksScheduler = ForegroundTasksSchedulerWrapper()
-		pendingTasksRepository.getAll { tasks ->
-			tasks.forEach {
+		thread {
+			val pendingTasksRepository = PendingTasksRepository()
+			pendingTasksRepository.getAll().forEach {
 				logger.d("Rescheduling $it")
-				foregroundTasksScheduler.reschedule(it)
+				foregroundTasksSchedulerWrapper.reschedule(it)
 			}
 		}
 	}

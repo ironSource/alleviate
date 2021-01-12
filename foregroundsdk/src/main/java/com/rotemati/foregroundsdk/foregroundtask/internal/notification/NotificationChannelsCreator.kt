@@ -7,7 +7,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import com.rotemati.foregroundsdk.foregroundtask.internal.extensions.getNotificationManager
 
-class NotificationChannelsCreator(private val context: Context) {
+internal class NotificationChannelsCreator(private val context: Context) {
 	@RequiresApi(Build.VERSION_CODES.O)
 	fun createChannel(channel: String) {
 		val notificationChannel =

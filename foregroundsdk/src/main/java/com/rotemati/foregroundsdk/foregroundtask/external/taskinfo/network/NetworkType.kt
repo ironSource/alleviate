@@ -7,3 +7,10 @@ enum class NetworkType : Serializable {
 	Any,
 	NotRoaming
 }
+
+
+const val NETWORK_TYPE_NONE = 0
+
+const val NETWORK_TYPE_ANY = 1
+
+const val NETWORK_TYPE_NOT_ROAMING = 3

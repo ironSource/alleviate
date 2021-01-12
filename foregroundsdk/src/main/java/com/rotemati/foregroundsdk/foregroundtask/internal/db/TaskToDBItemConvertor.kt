@@ -2,7 +2,7 @@ package com.rotemati.foregroundsdk.foregroundtask.internal.db
 
 import com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.ForegroundTaskInfo
 
-class TaskToDBItemConvertor {
+internal class TaskToDBItemConvertor {
 	fun toDBItem(foregroundTaskInfo: ForegroundTaskInfo, componentName: String): ForegroundTaskInfoDBItem {
 		return ForegroundTaskInfoDBItem(
 				foregroundTaskInfo.id,
@@ -11,6 +11,7 @@ class TaskToDBItemConvertor {
 				foregroundTaskInfo.minLatencyMillis,
 				foregroundTaskInfo.timeoutMillis,
 				foregroundTaskInfo.retryCount,
+				foregroundTaskInfo.runImmediately,
 				componentName
 		)
 	}
@@ -22,7 +23,8 @@ class TaskToDBItemConvertor {
 				foregroundTaskInfoDBItem.persisted,
 				foregroundTaskInfoDBItem.minLatencyMillis,
 				foregroundTaskInfoDBItem.timeoutMillis,
-				foregroundTaskInfoDBItem.retryCount
+				foregroundTaskInfoDBItem.retryCount,
+				foregroundTaskInfoDBItem.runImmediately
 		)
 	}
 }

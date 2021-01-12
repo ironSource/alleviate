@@ -1,4 +1,4 @@
-package com.rotemati.foregroundsdk.connectivity
+package com.rotemati.foregroundsdk.foregroundtask.internal.connectivity
 
 import android.app.job.JobInfo
 import android.app.job.JobParameters
@@ -14,6 +14,8 @@ import com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.ForegroundTas
 import com.rotemati.foregroundsdk.foregroundtask.internal.extensions.getJobScheduler
 import com.rotemati.foregroundsdk.foregroundtask.internal.logger.LoggerWrapper
 import com.rotemati.foregroundsdk.foregroundtask.internal.repositories.PendingTasksRepository
+import com.rotemati.foregroundsdk.foregroundtask.internal.repositories.TaskInfoSpec
+import kotlin.concurrent.thread
 
 private const val JOB_SERVICE_ID = 12
 private const val FOREGROUND_TASK_ID = "FOREGROUND_TASK_ID"
@@ -31,11 +33,23 @@ internal class ConnectivityJobService : JobService() {
 	}
 
 	override fun onStartJob(params: JobParameters?): Boolean {
-		params?.extras?.getInt(FOREGROUND_TASK_ID)?.let { taskId ->
-			pendingTasksRepository.getById(taskId) { task ->
-				task?.let { nonNullTask ->
+		thread {
+			params?.extras?.getInt(FOREGROUND_TASK_ID)?.let { taskId ->
+				pendingTasksRepository.getById(taskId)?.let { nonNullTask ->
 					logger.d("Rescheduling $nonNullTask")
-					foregroundTasksSchedulerWrapper.reschedule(nonNullTask)
+					val newTask = TaskInfoSpec(
+							foregroundTaskInfo = ForegroundTaskInfo(
+									id = nonNullTask.foregroundTaskInfo.id,
+									networkType = nonNullTask.foregroundTaskInfo.networkType,
+									persisted = nonNullTask.foregroundTaskInfo.persisted,
+									minLatencyMillis = nonNullTask.foregroundTaskInfo.minLatencyMillis,
+									timeoutMillis = nonNullTask.foregroundTaskInfo.timeoutMillis,
+									retryCount = nonNullTask.foregroundTaskInfo.retryCount,
+									runImmediately = true
+							),
+							componentName = nonNullTask.componentName
+					)
+					foregroundTasksSchedulerWrapper.reschedule(newTask)
 				}
 			}
 		}
@@ -46,6 +60,7 @@ internal class ConnectivityJobService : JobService() {
 
 	companion object {
 		private val logger: ForegroundLogger = LoggerWrapper(ForegroundSDK.foregroundLogger)
+		private val converter = NetworkTypeToJobSchedulerConverter()
 
 		fun schedule(
 				context: Context,
@@ -57,7 +72,7 @@ internal class ConnectivityJobService : JobService() {
 			val jobInfoBuilder = JobInfo.Builder(
 					JOB_SERVICE_ID,
 					ComponentName(context.packageName, ConnectivityJobService::class.java.name)
-			).setPersisted(taskInfo.persisted).setRequiredNetworkType(taskInfo.networkType.ordinal)
+			).setPersisted(taskInfo.persisted).setRequiredNetworkType(converter.convert(taskInfo.networkType))
 					.setExtras(bundle)
 			val result = context.getJobScheduler().schedule(jobInfoBuilder.build())
 			if (result == JobScheduler.RESULT_FAILURE) {

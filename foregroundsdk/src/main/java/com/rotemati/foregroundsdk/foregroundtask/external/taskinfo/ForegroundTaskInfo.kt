@@ -9,11 +9,14 @@ data class ForegroundTaskInfo(
 		val persisted: Boolean,
 		val minLatencyMillis: Long,
 		val timeoutMillis: Long,
-		val retryCount: Int = 0
+		val retryCount: Int = 0,
+		val runImmediately: Boolean = false
 		//todo think about periodic? api for cancel pending task
 ) : Serializable {
 
 	fun latencyEpoch() = System.currentTimeMillis() + minLatencyMillis
+
+	fun shouldRunImmediately() = runImmediately || minLatencyMillis == 0L
 
 	class Builder {
 		private var id: Int = -1

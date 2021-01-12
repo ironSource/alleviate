@@ -3,7 +3,7 @@ package com.rotemati.foregroundsdk.foregroundtask.internal.db
 import androidx.room.Room
 import com.rotemati.foregroundsdk.foregroundtask.external.ForegroundSDK
 
-object TasksDBHolder {
+internal object TasksDBHolder {
 
 	val foregroundTaskInfoDao: ForegroundTaskInfoDao
 		get() = Room.databaseBuilder(

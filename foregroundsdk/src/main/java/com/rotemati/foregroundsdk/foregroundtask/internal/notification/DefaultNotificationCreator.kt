@@ -6,7 +6,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.rotemati.foregroundtesterapp.sdk.R
 
-class DefaultNotificationCreator {
+internal class DefaultNotificationCreator {
 	fun create(context: Context): Notification {
 		val resources = context.resources
 		val channelId = resources.getString(R.string.default_foreground_notification_channel_id)

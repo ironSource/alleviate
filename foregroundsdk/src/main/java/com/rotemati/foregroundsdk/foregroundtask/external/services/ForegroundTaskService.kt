@@ -4,30 +4,31 @@ import android.app.Notification
 import com.rotemati.foregroundsdk.foregroundtask.external.ForegroundSDK
 import com.rotemati.foregroundsdk.foregroundtask.external.logger.ForegroundLogger
 import com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.result.Result
-import com.rotemati.foregroundsdk.foregroundtask.internal.exceptions.TimeoutCancellationException
 import com.rotemati.foregroundsdk.foregroundtask.internal.logger.LoggerWrapper
+import java.util.*
 
 abstract class ForegroundTaskService : BaseForegroundTaskService() {
 
 	private val logger: ForegroundLogger = LoggerWrapper(ForegroundSDK.foregroundLogger)
-
-	private lateinit var result: Result
+	private val timer: Timer = Timer()
 
 	abstract override fun getNotification(): Notification
 
 	abstract fun doWork(): Result
 
+	abstract fun onTimeout(): Result
+
 	override fun startWork(): Result {
-		//todo timeout cancellation
-		result = try {
-			doWork()
-		} catch (exception: TimeoutCancellationException) {
-			exception.message?.let { logger.e(it) }
-			// if timeout reached, check RetryPolicy
-			exception.message?.let { logger.e(it) }
-			Result.Failed(exception)
+		val timerTask = object : TimerTask() {
+			override fun run() {
+				timer.cancel()
+				onTimeout()
+			}
 		}
-		logger.d("Returning $result")
-		return result
+		timer.schedule(timerTask, foregroundTaskInfo.timeoutMillis)
+		return doWork().also {
+			logger.d("cancel timer")
+			timer.cancel()
+		}
 	}
 }

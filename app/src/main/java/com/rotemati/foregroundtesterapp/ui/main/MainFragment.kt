@@ -46,7 +46,7 @@ class MainFragment : Fragment() {
 			val foregroundTaskInfo = foregroundTaskInfo(11200) {
 				networkType = NetworkType.Any
 				persisted = true
-				minLatencyMillis = TimeUnit.SECONDS.toMillis(0)
+				minLatencyMillis = TimeUnit.SECONDS.toMillis(5)
 				timeoutMillis = TimeUnit.SECONDS.toMillis(15)
 			}
 			ForegroundTasksSchedulerWrapper().scheduleForegroundTask(

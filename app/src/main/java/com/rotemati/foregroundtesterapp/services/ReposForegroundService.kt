@@ -5,6 +5,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import androidx.core.app.NotificationCompat
+import com.rotemati.foregroundsdk.foregroundtask.external.reschedulepolicy.RetryPolicy
 import com.rotemati.foregroundsdk.foregroundtask.external.services.ForegroundTaskService
 import com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.result.Result
 import com.rotemati.foregroundtesterapp.R
@@ -36,12 +37,24 @@ class ReposForegroundService : ForegroundTaskService() {
 			Result.Success
 		} catch (e: Exception) {
 			e.message?.let { TesterAppLogger.e(it) }
-			TesterAppLogger.i("retryCount: ${getForegroundTaskInfo().retryCount}")
-			if (getForegroundTaskInfo().retryCount >= 3) {
-				Result.Failed()
+			TesterAppLogger.i("retryCount: ${foregroundTaskInfo.retryCount}")
+			Thread.sleep(foregroundTaskInfo.timeoutMillis)
+			if (foregroundTaskInfo.retryCount >= 3) {
+				Result.Failed
 			} else {
-				Result.Reschedule
+				Result.Reschedule(RetryPolicy.Linear)
 			}
+		}
+	}
+
+	override fun onTimeout(): Result {
+		TesterAppLogger.d("onTimeout")
+		TesterAppLogger.i("retryCount: ${foregroundTaskInfo.retryCount}")
+		Thread.sleep(foregroundTaskInfo.timeoutMillis)
+		return if (foregroundTaskInfo.retryCount >= 3) {
+			Result.Failed
+		} else {
+			Result.Reschedule(RetryPolicy.Linear)
 		}
 	}
 }

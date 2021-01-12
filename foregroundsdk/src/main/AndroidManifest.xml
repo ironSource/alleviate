@@ -8,7 +8,7 @@
 
     <application>
         <service
-            android:name="com.rotemati.foregroundsdk.connectivity.ConnectivityJobService"
+            android:name="com.rotemati.foregroundsdk.foregroundtask.internal.connectivity.ConnectivityJobService"
             android:permission="android.permission.BIND_JOB_SERVICE" />
 
         <receiver
