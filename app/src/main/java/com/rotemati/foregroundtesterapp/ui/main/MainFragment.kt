@@ -49,10 +49,12 @@ class MainFragment : Fragment() {
 				minLatencyMillis = TimeUnit.SECONDS.toMillis(5)
 				timeoutMillis = TimeUnit.SECONDS.toMillis(15)
 			}
-			ForegroundTasksSchedulerWrapper().scheduleForegroundTask(
+			val foregroundTasksSchedulerWrapper = ForegroundTasksSchedulerWrapper()
+			foregroundTasksSchedulerWrapper.scheduleForegroundTask(
 					ReposForegroundService::class.java,
 					foregroundTaskInfo
 			)
+//			foregroundTasksSchedulerWrapper.cancel(11200)
 		}
 
 		viewModel.spinner.observe(viewLifecycleOwner) { value ->

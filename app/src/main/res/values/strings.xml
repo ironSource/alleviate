@@ -3,5 +3,5 @@
     <string name="my_channel">Rotem updates</string>
     <string name="my_title">Rotem title</string>
     <string name="my_body">Rotem body</string>
-    <string name="fetch_repos">Fetch Repos</string>
+    <string name="fetch_repos_button">Fetch Repos</string>
 </resources>

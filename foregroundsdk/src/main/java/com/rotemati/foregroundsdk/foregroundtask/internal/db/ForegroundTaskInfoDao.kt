@@ -16,4 +16,7 @@ internal interface ForegroundTaskInfoDao {
 
 	@Delete
 	fun delete(taskInfo: ForegroundTaskInfoDBItem)
+
+	@Query("DELETE FROM tasks")
+	fun deleteAll()
 }

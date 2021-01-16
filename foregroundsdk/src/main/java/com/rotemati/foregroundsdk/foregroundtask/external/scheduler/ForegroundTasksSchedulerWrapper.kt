@@ -10,7 +10,8 @@ import com.rotemati.foregroundsdk.foregroundtask.internal.repositories.TaskInfoS
 import com.rotemati.foregroundsdk.foregroundtask.internal.scheduler.ForegroundTasksScheduler
 import com.rotemati.foregroundsdk.foregroundtask.internal.scheduler.ForegroundTasksSchedulerPost26
 import com.rotemati.foregroundsdk.foregroundtask.internal.scheduler.ForegroundTasksSchedulerPre26
-import kotlin.concurrent.thread
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 //think about testing - mock the scheduler
 class ForegroundTasksSchedulerWrapper {
@@ -22,6 +23,7 @@ class ForegroundTasksSchedulerWrapper {
 	} else {
 		ForegroundTasksSchedulerPre26(context)
 	}
+	private val executorService: ExecutorService = Executors.newSingleThreadExecutor()
 
 	fun scheduleForegroundTask(
 			className: Class<*>, foregroundTaskInfo: ForegroundTaskInfo
@@ -33,10 +35,20 @@ class ForegroundTasksSchedulerWrapper {
 //			return
 //		}
 
-		thread {
+		executorService.submit {
 			logger.i("Saving taskId: ${foregroundTaskInfo.id}")
 			pendingTasksRepository.save(taskInfoSpec)
 			foregroundTasksScheduler.schedule(taskInfoSpec)
+		}
+	}
+
+	fun cancel(taskId: Int) {
+		executorService.submit {
+			pendingTasksRepository.getById(taskId)?.let {
+				logger.i("cancel task $taskId")
+				foregroundTasksScheduler.cancel(it)
+				pendingTasksRepository.remove(it.foregroundTaskInfo)
+			}
 		}
 	}
 

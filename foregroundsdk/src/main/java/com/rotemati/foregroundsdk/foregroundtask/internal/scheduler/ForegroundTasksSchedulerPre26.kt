@@ -8,7 +8,6 @@ import android.os.PersistableBundle
 import com.rotemati.foregroundsdk.foregroundtask.external.ForegroundSDK
 import com.rotemati.foregroundsdk.foregroundtask.external.logger.ForegroundLogger
 import com.rotemati.foregroundsdk.foregroundtask.external.services.BaseForegroundTaskService
-import com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.ForegroundTaskInfo
 import com.rotemati.foregroundsdk.foregroundtask.internal.connectivity.NetworkTypeToJobSchedulerConverter
 import com.rotemati.foregroundsdk.foregroundtask.internal.extensions.getJobScheduler
 import com.rotemati.foregroundsdk.foregroundtask.internal.logger.LoggerWrapper
@@ -29,7 +28,9 @@ internal class ForegroundTasksSchedulerPre26(
 		val jobInfoBuilder = JobInfo.Builder(
 				taskInfoSpec.foregroundTaskInfo.id,
 				ComponentName(context.packageName, taskInfoSpec.componentName)
-		).setPersisted(taskInfoSpec.foregroundTaskInfo.persisted).setRequiredNetworkType(converter.convert(taskInfoSpec.foregroundTaskInfo.networkType))
+		)
+				.setPersisted(taskInfoSpec.foregroundTaskInfo.persisted)
+				.setRequiredNetworkType(converter.convert(taskInfoSpec.foregroundTaskInfo.networkType))
 				.setExtras(bundle)
 		val result = context.getJobScheduler().schedule(jobInfoBuilder.build())
 		if (result == JobScheduler.RESULT_FAILURE) {
@@ -37,7 +38,7 @@ internal class ForegroundTasksSchedulerPre26(
 		}
 	}
 
-	override fun cancel(foregroundTaskInfo: ForegroundTaskInfo) {
-		context.getJobScheduler().cancel(foregroundTaskInfo.id)
+	override fun cancel(taskInfoSpec: TaskInfoSpec) {
+		context.getJobScheduler().cancel(taskInfoSpec.foregroundTaskInfo.id)
 	}
 }

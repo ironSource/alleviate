@@ -17,15 +17,15 @@ class ReposForegroundService : ForegroundTaskService() {
 
 	override fun getNotification(): Notification {
 		// create channel
-		val channelId = "kotlin channel"
+		val channelId = resources.getString(R.string.my_channel)
 		val notificationChannel = NotificationChannel(channelId, channelId, NotificationManager.IMPORTANCE_DEFAULT)
 		notificationChannel.setSound(null, null)
 		val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 		notificationManager.createNotificationChannel(notificationChannel)
 
 		return NotificationCompat.Builder(this, channelId)
-				.setContentTitle("ReposForegroundService Title")
-				.setContentText("ReposForegroundService Text")
+				.setContentTitle(resources.getString(R.string.my_title))
+				.setContentText(resources.getString(R.string.my_body))
 				.setSmallIcon(R.drawable.ic_launcher_foreground)
 				.build()
 	}
@@ -38,7 +38,6 @@ class ReposForegroundService : ForegroundTaskService() {
 		} catch (e: Exception) {
 			e.message?.let { TesterAppLogger.e(it) }
 			TesterAppLogger.i("retryCount: ${foregroundTaskInfo.retryCount}")
-			Thread.sleep(foregroundTaskInfo.timeoutMillis)
 			if (foregroundTaskInfo.retryCount >= 3) {
 				Result.Failed
 			} else {
@@ -50,7 +49,6 @@ class ReposForegroundService : ForegroundTaskService() {
 	override fun onTimeout(): Result {
 		TesterAppLogger.d("onTimeout")
 		TesterAppLogger.i("retryCount: ${foregroundTaskInfo.retryCount}")
-		Thread.sleep(foregroundTaskInfo.timeoutMillis)
 		return if (foregroundTaskInfo.retryCount >= 3) {
 			Result.Failed
 		} else {

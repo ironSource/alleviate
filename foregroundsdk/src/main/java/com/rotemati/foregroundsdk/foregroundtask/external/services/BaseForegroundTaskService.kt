@@ -93,6 +93,7 @@ abstract class BaseForegroundTaskService : Service() {
 	}
 
 	private fun onReschedule(taskInfoSpec: TaskInfoSpec, retryPolicy: RetryPolicy) {
+		logger.i("Reschedule Task")
 		val newRetryCount = taskInfoSpec.foregroundTaskInfo.retryCount.inc()
 		foregroundTaskInfo = ForegroundTaskInfo(
 				id = foregroundTaskInfo.id,
@@ -109,6 +110,7 @@ abstract class BaseForegroundTaskService : Service() {
 	}
 
 	private fun onFailed() {
+		logger.i("Task failed - removing it from repo")
 		pendingTasksRepository.remove(foregroundTaskInfo)
 		finish()
 	}

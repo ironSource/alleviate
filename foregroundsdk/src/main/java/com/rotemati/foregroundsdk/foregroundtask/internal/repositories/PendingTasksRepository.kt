@@ -7,30 +7,30 @@ import com.rotemati.foregroundsdk.foregroundtask.internal.db.TasksDBHolder
 
 internal class PendingTasksRepository {
 
-	private val dao = TasksDBHolder.foregroundTaskInfoDao
+	private val db = TasksDBHolder.db
 	private val taskToDBItemConvertor = TaskToDBItemConvertor()
 
 	@WorkerThread
 	fun getAll(): List<TaskInfoSpec> {
-		return dao.getAll().map {
+		return db.foregroundTaskInfoDao().getAll().map {
 			TaskInfoSpec(taskToDBItemConvertor.fromDBItem(it), it.componentName)
-		}
+		}.also { db.close() }
 	}
 
 	@WorkerThread
 	fun getById(id: Int): TaskInfoSpec? {
-		val foregroundTaskInfoDBItem = dao.getById(id)
+		val foregroundTaskInfoDBItem = db.foregroundTaskInfoDao().getById(id)
 		return foregroundTaskInfoDBItem?.let {
 			TaskInfoSpec(taskToDBItemConvertor.fromDBItem(it), it.componentName)
-		}
+		}.also { db.close() }
 	}
 
 	@WorkerThread
 	fun remove(foregroundTaskInfo: ForegroundTaskInfo) {
-		val savedTaskInfo = dao.getById(foregroundTaskInfo.id)
+		val savedTaskInfo = db.foregroundTaskInfoDao().getById(foregroundTaskInfo.id)
 		savedTaskInfo?.let {
-			dao.delete(savedTaskInfo)
-		}
+			db.foregroundTaskInfoDao().delete(savedTaskInfo)
+		}.also { db.close() }
 	}
 
 	@WorkerThread
@@ -39,7 +39,7 @@ internal class PendingTasksRepository {
 				taskInfoSpec.foregroundTaskInfo,
 				taskInfoSpec.componentName
 		)
-		dao.insert(dbItem)
+		db.foregroundTaskInfoDao().insert(dbItem).also { db.close() }
 	}
 }
 
