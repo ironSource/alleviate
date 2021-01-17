@@ -14,7 +14,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import java.util.concurrent.TimeUnit
-import kotlin.properties.Delegates
 import kotlin.properties.Delegates.notNull
 
 @RunWith(RobolectricTestRunner::class)
@@ -45,8 +44,8 @@ internal class DatabaseTests {
 			)
 		}
 		act {
-			db.insert(dbItem)
-			actualValue = db.getById(taskId)?.id
+			db.tasksDao.insert(dbItem)
+			actualValue = db.tasksDao.getById(taskId)?.id
 		}
 		assert { assertThat(actualValue, equalTo(taskId)) }
 	}
@@ -54,9 +53,9 @@ internal class DatabaseTests {
 	@Test
 	fun `WHEN adding new task to db THEN delete it the returned task from db SHOULD be null`() =
 			test {
-				var taskId: Int by Delegates.notNull()
+				var taskId: Int by notNull()
 				var actualValue: ForegroundTaskInfoDBItem? = null
-				var dbItem: ForegroundTaskInfoDBItem by Delegates.notNull()
+				var dbItem: ForegroundTaskInfoDBItem by notNull()
 				arrange {
 					// prepare mock data
 					taskId = 909
@@ -73,9 +72,9 @@ internal class DatabaseTests {
 					)
 				}
 				act {
-					db.insert(dbItem)
-					db.delete(dbItem)
-					actualValue = db.getById(taskId)
+					db.tasksDao.insert(dbItem)
+					db.tasksDao.delete(dbItem)
+					actualValue = db.tasksDao.getById(taskId)
 				}
 				assert {
 					assertThat(actualValue, equalTo(null))
@@ -90,7 +89,7 @@ internal class DatabaseTests {
 				var actualValue: Int by notNull()
 				var tasksList: List<ForegroundTaskInfoDBItem> by notNull()
 				arrange {
-					if (db.getAll().isNotEmpty()) {
+					if (db.tasksDao.getAll().isNotEmpty()) {
 						throw IllegalStateException("the db should be empty")
 					}
 					expectedValue = 3
@@ -102,8 +101,8 @@ internal class DatabaseTests {
 					)
 				}
 				act {
-					tasksList.forEach { db.insert(it) }
-					actualValue = db.getAll().size
+					tasksList.forEach { db.tasksDao.insert(it) }
+					actualValue = db.tasksDao.getAll().size
 				}
 				assert { assertThat(actualValue, equalTo(expectedValue)) }
 			}
