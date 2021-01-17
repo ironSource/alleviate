@@ -27,8 +27,8 @@ internal class DatabaseRule : ExternalResource() {
 		// create db
 		val context = ApplicationProvider.getApplicationContext<Context>()
 		db = Room.inMemoryDatabaseBuilder(
-                context, TasksDatabase::class.java
-        ).allowMainThreadQueries().build()
+				context, TasksDatabase::class.java
+		).allowMainThreadQueries().build()
 		tasksDao = db.foregroundTaskInfoDao()
 	}
 
