@@ -13,6 +13,7 @@ https://medium.com/@rotemmatityahu/workmanager-does-it-always-manage-to-work-fd8
 - Support custom logger.
 
 ## Usage:
+- Kotlin
 ```kotlin
 fun scheduleForegroundTask() {
 	val foregroundTaskInfo = foregroundTaskInfo(11200) {
@@ -27,6 +28,7 @@ fun scheduleForegroundTask() {
 	)
 }
 ```
+- Java
 ```java
 public void scheduleForegroundTask() {
 	final ForegroundTaskInfo foregroundTaskInfo = new ForegroundTaskInfo.Builder().id(12345)
