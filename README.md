@@ -27,6 +27,18 @@ fun scheduleForegroundTask() {
 	)
 }
 ```
+```java
+public void scheduleForegroundTask() {
+	final ForegroundTaskInfo foregroundTaskInfo = new ForegroundTaskInfo.Builder().id(12345)
+	                                                                              .networkType(NetworkType.Any)
+	                                                                              .persisted(true)
+	                                                                              .minLatencyMillis(TimeUnit.SECONDS.toMillis(10))
+	                                                                              .timeoutMillis(TimeUnit.SECONDS.toMillis(15))
+	                                                                              .build();
+
+	new ForegroundTasksSchedulerWrapper().scheduleForegroundTask(ReposForegroundService.class, foregroundTaskInfo);
+}
+```
 
 ## Initializing the SDK
 ```kotlin
@@ -48,4 +60,46 @@ val minLatencyMillis: Long,
 val timeoutMillis: Long
 ```
 
+## Create Foreground
+```kotlin
+class ReposForegroundService : ForegroundTaskService() {
 
+    override fun getNotification(): Notification {
+        // create channel
+        val channelId = resources.getString(R.string.my_channel)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            val notificationChannel = NotificationChannel(channelId, channelId, NotificationManager.IMPORTANCE_DEFAULT)
+            notificationChannel.setSound(null, null)
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(notificationChannel)
+        }
+
+        return NotificationCompat.Builder(this, channelId)
+            .setContentTitle(resources.getString(R.string.my_title))
+            .setContentText(resources.getString(R.string.my_body))
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .build()
+    }
+
+    override fun doWork(): Result {
+        return try {
+            val futureRepos = GitHubRepo(getNetworkService()).getRepos()
+            Result.Success
+        } catch (e: Exception) {
+            if (foregroundTaskInfo.retryCount >= 3) {
+                Result.Failed
+            } else {
+                Result.Reschedule(RetryPolicy.Linear)
+            }
+        }
+    }
+
+    override fun onTimeout(): Result {
+        return if (foregroundTaskInfo.retryCount >= 3) {
+            Result.Failed
+        } else {
+            Result.Reschedule(RetryPolicy.Exponential)
+        }
+    }
+}
+```
