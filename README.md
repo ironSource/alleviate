@@ -34,8 +34,8 @@ public void scheduleForegroundTask() {
 	final ForegroundTaskInfo foregroundTaskInfo = new ForegroundTaskInfo.Builder().id(12345)
 	                                                                              .networkType(NetworkType.Any)
 	                                                                              .persisted(true)
-	                                                                              .minLatencyMillis(TimeUnit.SECONDS.toMillis(10))
-	                                                                              .timeoutMillis(TimeUnit.SECONDS.toMillis(15))
+	                                                                              .minLatencyMillis(TimeUnit.HOURS.toMillis(12))
+	                                                                              .timeoutMillis(TimeUnit.MINUTES.toMillis(1))
 	                                                                              .build();
 
 	new ForegroundTasksSchedulerWrapper().scheduleForegroundTask(ReposForegroundService.class, foregroundTaskInfo);
