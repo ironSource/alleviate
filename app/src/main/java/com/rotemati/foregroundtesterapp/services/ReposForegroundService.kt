@@ -18,10 +18,12 @@ class ReposForegroundService : ForegroundTaskService() {
 	override fun getNotification(): Notification {
 		// create channel
 		val channelId = resources.getString(R.string.my_channel)
-		val notificationChannel = NotificationChannel(channelId, channelId, NotificationManager.IMPORTANCE_DEFAULT)
-		notificationChannel.setSound(null, null)
-		val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-		notificationManager.createNotificationChannel(notificationChannel)
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+			val notificationChannel = NotificationChannel(channelId, channelId, NotificationManager.IMPORTANCE_DEFAULT)
+			notificationChannel.setSound(null, null)
+			val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+			notificationManager.createNotificationChannel(notificationChannel)
+		}
 
 		return NotificationCompat.Builder(this, channelId)
 				.setContentTitle(resources.getString(R.string.my_title))

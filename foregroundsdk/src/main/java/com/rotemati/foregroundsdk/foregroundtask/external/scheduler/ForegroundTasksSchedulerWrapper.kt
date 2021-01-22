@@ -30,11 +30,6 @@ class ForegroundTasksSchedulerWrapper {
 	) {
 		val taskInfoSpec = TaskInfoSpec(foregroundTaskInfo, className.name)
 
-//		if (className.superclass !is BaseForegroundTaskService) {
-//			SDKLogger.e("Component should extend from CoroutineForegroundTaskService or ForegroundTaskService")
-//			return
-//		}
-
 		executorService.submit {
 			logger.i("Saving taskId: ${foregroundTaskInfo.id}")
 			pendingTasksRepository.save(taskInfoSpec)

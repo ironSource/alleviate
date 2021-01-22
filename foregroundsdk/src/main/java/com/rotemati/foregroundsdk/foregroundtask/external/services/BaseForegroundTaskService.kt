@@ -16,7 +16,8 @@ import com.rotemati.foregroundsdk.foregroundtask.internal.notification.DefaultNo
 import com.rotemati.foregroundsdk.foregroundtask.internal.repositories.PendingTasksRepository
 import com.rotemati.foregroundsdk.foregroundtask.internal.repositories.TaskInfoSpec
 import java.util.*
-import kotlin.concurrent.thread
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 private const val TASK_ID_NOT_VALID = -1
 private const val DEFAULT_NOTIFICATION_ID = 654321
@@ -31,6 +32,7 @@ abstract class BaseForegroundTaskService : Service() {
 	private lateinit var getConnectivityState: GetConnectivityState
 	private lateinit var getConnectivityAllowance: GetConnectivityAllowance
 	lateinit var foregroundTaskInfo: ForegroundTaskInfo
+	private val executorService: ExecutorService = Executors.newSingleThreadExecutor()
 
 	private val logger: ForegroundLogger = LoggerWrapper(ForegroundSDK.foregroundLogger)
 
@@ -66,11 +68,11 @@ abstract class BaseForegroundTaskService : Service() {
 			onError("job id not valid")
 			return START_NOT_STICKY
 		}
-		thread {
+		executorService.submit {
 			val taskInfoSpec = pendingTasksRepository.getById(jobId)
 			if (taskInfoSpec == null) {
 				onError("job isn't in the repo")
-				return@thread
+				return@submit
 			} else {
 				foregroundTaskInfo = taskInfoSpec.foregroundTaskInfo
 				val connectivityAllowance = getConnectivityAllowance(foregroundTaskInfo.networkType, getConnectivityState())
@@ -78,7 +80,7 @@ abstract class BaseForegroundTaskService : Service() {
 					onError(connectivityAllowance.reason, foregroundTaskInfo.id)
 					logger.i("Scheduling connectivity job service")
 					ConnectivityJobService.schedule(this, foregroundTaskInfo)
-					return@thread
+					return@submit
 				}
 				startForeground(foregroundTaskInfo.id, getNotification())
 				when (val result = startWork()) {

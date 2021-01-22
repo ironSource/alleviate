@@ -15,7 +15,8 @@ import com.rotemati.foregroundsdk.foregroundtask.internal.extensions.getJobSched
 import com.rotemati.foregroundsdk.foregroundtask.internal.logger.LoggerWrapper
 import com.rotemati.foregroundsdk.foregroundtask.internal.repositories.PendingTasksRepository
 import com.rotemati.foregroundsdk.foregroundtask.internal.repositories.TaskInfoSpec
-import kotlin.concurrent.thread
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 private const val JOB_SERVICE_ID = 12
 private const val FOREGROUND_TASK_ID = "FOREGROUND_TASK_ID"
@@ -24,6 +25,7 @@ internal class ConnectivityJobService : JobService() {
 
 	private lateinit var foregroundTasksSchedulerWrapper: ForegroundTasksSchedulerWrapper
 	private lateinit var pendingTasksRepository: PendingTasksRepository
+	private val executorService: ExecutorService = Executors.newSingleThreadExecutor()
 
 	private val logger: ForegroundLogger = LoggerWrapper(ForegroundSDK.foregroundLogger)
 
@@ -33,7 +35,7 @@ internal class ConnectivityJobService : JobService() {
 	}
 
 	override fun onStartJob(params: JobParameters?): Boolean {
-		thread {
+		executorService.submit {
 			params?.extras?.getInt(FOREGROUND_TASK_ID)?.let { taskId ->
 				pendingTasksRepository.getById(taskId)?.let { nonNullTask ->
 					logger.d("Rescheduling $nonNullTask")

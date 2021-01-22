@@ -49,8 +49,7 @@ class MainFragment : Fragment() {
 				minLatencyMillis = TimeUnit.SECONDS.toMillis(5)
 				timeoutMillis = TimeUnit.SECONDS.toMillis(15)
 			}
-			val foregroundTasksSchedulerWrapper = ForegroundTasksSchedulerWrapper()
-			foregroundTasksSchedulerWrapper.scheduleForegroundTask(
+			ForegroundTasksSchedulerWrapper().scheduleForegroundTask(
 					ReposForegroundService::class.java,
 					foregroundTaskInfo
 			)
