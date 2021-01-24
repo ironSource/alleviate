@@ -27,8 +27,6 @@ internal class ConnectivityJobService : JobService() {
 	private lateinit var pendingTasksRepository: PendingTasksRepository
 	private val executorService: ExecutorService = Executors.newSingleThreadExecutor()
 
-	private val logger: ForegroundLogger = LoggerWrapper(ForegroundSDK.foregroundLogger)
-
 	override fun onCreate() {
 		foregroundTasksSchedulerWrapper = ForegroundTasksSchedulerWrapper()
 		pendingTasksRepository = PendingTasksRepository()
@@ -37,8 +35,7 @@ internal class ConnectivityJobService : JobService() {
 	override fun onStartJob(params: JobParameters?): Boolean {
 		executorService.submit {
 			params?.extras?.getInt(FOREGROUND_TASK_ID)?.let { taskId ->
-				pendingTasksRepository.getById(taskId)?.let { nonNullTask ->
-					logger.d("Rescheduling $nonNullTask")
+				pendingTasksRepository.getTaskInfo(taskId)?.let { nonNullTask ->
 					val newTask = TaskInfoSpec(
 							foregroundTaskInfo = ForegroundTaskInfo(
 									id = nonNullTask.foregroundTaskInfo.id,
@@ -51,7 +48,7 @@ internal class ConnectivityJobService : JobService() {
 							),
 							componentName = nonNullTask.componentName
 					)
-					foregroundTasksSchedulerWrapper.reschedule(newTask)
+					foregroundTasksSchedulerWrapper.scheduleForegroundTask(Class.forName(newTask.componentName), newTask.foregroundTaskInfo)
 				}
 			}
 		}

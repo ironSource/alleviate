@@ -3,7 +3,7 @@ package com.rotemati.foregroundsdk.foregroundtask.internal.db
 import com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.ForegroundTaskInfo
 
 internal class TaskToDBItemConvertor {
-	fun toDBItem(foregroundTaskInfo: ForegroundTaskInfo, componentName: String): ForegroundTaskInfoDBItem {
+	fun toDBItem(timestamp: Long, foregroundTaskInfo: ForegroundTaskInfo, componentName: String): ForegroundTaskInfoDBItem {
 		return ForegroundTaskInfoDBItem(
 				foregroundTaskInfo.id,
 				foregroundTaskInfo.networkType,
@@ -12,6 +12,7 @@ internal class TaskToDBItemConvertor {
 				foregroundTaskInfo.timeoutMillis,
 				foregroundTaskInfo.retryCount,
 				foregroundTaskInfo.runImmediately,
+				timestamp,
 				componentName
 		)
 	}

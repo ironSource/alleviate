@@ -2,15 +2,11 @@ package com.rotemati.foregroundtesterapp.model
 
 import com.google.gson.annotations.SerializedName
 import com.rotemati.foregroundtesterapp.webservices.Service
-import java.util.concurrent.Future
+import retrofit2.Call
 
 class GitHubRepo(private val service: Service) {
 
-	suspend fun getReposSuspend(): List<Repo> {
-		return service.getReposSuspend("rotman")
-	}
-
-	fun getRepos(): Future<List<Repo>> {
+	fun getRepos(): Call<List<Repo>> {
 		return service.getRepos("rotman")
 	}
 }

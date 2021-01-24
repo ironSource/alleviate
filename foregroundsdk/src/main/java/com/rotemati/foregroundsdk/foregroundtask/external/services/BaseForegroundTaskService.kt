@@ -9,7 +9,8 @@ import com.rotemati.foregroundsdk.foregroundtask.external.reschedulepolicy.Retry
 import com.rotemati.foregroundsdk.foregroundtask.external.scheduler.ForegroundTasksSchedulerWrapper
 import com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.ForegroundTaskInfo
 import com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.result.Result
-import com.rotemati.foregroundsdk.foregroundtask.internal.TriggerTimeCalculator
+import com.rotemati.foregroundsdk.foregroundtask.internal.RetryBackoffCalculator
+import com.rotemati.foregroundsdk.foregroundtask.internal.bucketpolling.BucketPoller
 import com.rotemati.foregroundsdk.foregroundtask.internal.connectivity.*
 import com.rotemati.foregroundsdk.foregroundtask.internal.logger.LoggerWrapper
 import com.rotemati.foregroundsdk.foregroundtask.internal.notification.DefaultNotificationCreator
@@ -28,7 +29,7 @@ abstract class BaseForegroundTaskService : Service() {
 	private lateinit var connectivityHandler: ConnectivityHandler
 	private lateinit var pendingTasksRepository: PendingTasksRepository
 	private lateinit var defaultNotificationCreator: DefaultNotificationCreator
-	private lateinit var triggerTimeCalculator: TriggerTimeCalculator
+	private lateinit var retryBackoffCalculator: RetryBackoffCalculator
 	private lateinit var getConnectivityState: GetConnectivityState
 	private lateinit var getConnectivityAllowance: GetConnectivityAllowance
 	lateinit var foregroundTaskInfo: ForegroundTaskInfo
@@ -53,11 +54,12 @@ abstract class BaseForegroundTaskService : Service() {
 		getConnectivityAllowance = GetConnectivityAllowance()
 		pendingTasksRepository = PendingTasksRepository()
 		defaultNotificationCreator = DefaultNotificationCreator()
-		triggerTimeCalculator = TriggerTimeCalculator()
+		retryBackoffCalculator = RetryBackoffCalculator()
 	}
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 		super.onStartCommand(intent, flags, startId)
+		BucketPoller.onNoLongerNeeded("Task is triggered")
 		if (intent == null) {
 			onError("intent is null")
 			return START_NOT_STICKY
@@ -69,7 +71,7 @@ abstract class BaseForegroundTaskService : Service() {
 			return START_NOT_STICKY
 		}
 		executorService.submit {
-			val taskInfoSpec = pendingTasksRepository.getById(jobId)
+			val taskInfoSpec = pendingTasksRepository.getTaskInfo(jobId)
 			if (taskInfoSpec == null) {
 				onError("job isn't in the repo")
 				return@submit
@@ -101,13 +103,12 @@ abstract class BaseForegroundTaskService : Service() {
 				id = foregroundTaskInfo.id,
 				networkType = foregroundTaskInfo.networkType,
 				persisted = foregroundTaskInfo.persisted,
-				minLatencyMillis = triggerTimeCalculator.calculate(retryPolicy, newRetryCount),
+				minLatencyMillis = retryBackoffCalculator.calculate(retryPolicy, newRetryCount),
 				timeoutMillis = foregroundTaskInfo.timeoutMillis,
 				retryCount = newRetryCount,
 				runImmediately = false
 		)
-		val newTaskInfoSpec = TaskInfoSpec(foregroundTaskInfo, taskInfoSpec.componentName)
-		foregroundTasksSchedulerWrapper.reschedule(newTaskInfoSpec)
+		foregroundTasksSchedulerWrapper.scheduleForegroundTask(Class.forName(taskInfoSpec.componentName), foregroundTaskInfo)
 		finish()
 	}
 

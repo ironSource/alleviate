@@ -3,9 +3,12 @@ package com.rotemati.foregroundtesterapp.ui.main
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import com.rotemati.foregroundsdk.foregroundtask.external.scheduler.ForegroundTasksSchedulerWrapper
+import com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.foregroundTaskInfo
+import com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.network.NetworkType
 import com.rotemati.foregroundtesterapp.model.GitHubRepo
-import kotlinx.coroutines.launch
+import com.rotemati.foregroundtesterapp.services.ReposForegroundService
+import java.util.concurrent.TimeUnit
 
 class MainViewModel(private val repository: GitHubRepo) : ViewModel() {
 
@@ -31,16 +34,16 @@ class MainViewModel(private val repository: GitHubRepo) : ViewModel() {
 	}
 
 	fun onFetchReposButtonClicked() {
-		viewModelScope.launch {
-			try {
-				_spinner.value = true
-				val repos = repository.getReposSuspend()
-				_snackBar.value = "${repos.size} repos fetched"
-			} catch (exception: Exception) {
-				_snackBar.value = exception.message
-			} finally {
-				_spinner.value = false
-			}
+		val foregroundTaskInfo = foregroundTaskInfo(11200) {
+			networkType = NetworkType.Any
+			persisted = true
+			minLatencyMillis = TimeUnit.SECONDS.toMillis(5)
+			timeoutMillis = TimeUnit.SECONDS.toMillis(15)
 		}
+		ForegroundTasksSchedulerWrapper().scheduleForegroundTask(
+				ReposForegroundService::class.java,
+				foregroundTaskInfo
+		)
+		//			foregroundTasksSchedulerWrapper.cancel(11200)
 	}
 }

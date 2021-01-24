@@ -1,17 +1,17 @@
 package com.rotemati.foregroundsdk.foregroundtask.internal
 
 import com.rotemati.foregroundsdk.foregroundtask.external.reschedulepolicy.RetryPolicy
+import java.util.concurrent.TimeUnit
 
-internal class TriggerTimeCalculator {
+internal class RetryBackoffCalculator {
 	fun calculate(retryPolicy: RetryPolicy, retryCount: Int): Long {
-		val time = when (retryPolicy) {
+		return when (retryPolicy) {
 			RetryPolicy.Linear -> {
-				retryCount * 1000
+				retryCount * TimeUnit.SECONDS.toMillis(1)
 			}
 			RetryPolicy.Exponential -> {
-				retryCount * 1000 * retryCount
+				retryCount * retryCount * TimeUnit.SECONDS.toMillis(1)
 			}
 		}
-		return time.toLong()
 	}
 }

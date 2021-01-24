@@ -34,8 +34,8 @@ class ReposForegroundService : ForegroundTaskService() {
 
 	override fun doWork(): Result {
 		return try {
-			val futureRepos = GitHubRepo(getNetworkService()).getRepos()
-			TesterAppLogger.i("${futureRepos.get().size} repos fetched")
+			val repos = GitHubRepo(getNetworkService()).getRepos().execute()
+			TesterAppLogger.i("${repos.body()?.size} repos fetched")
 			Result.Success
 		} catch (e: Exception) {
 			e.message?.let { TesterAppLogger.e(it) }

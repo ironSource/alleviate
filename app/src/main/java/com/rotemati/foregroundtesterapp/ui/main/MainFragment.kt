@@ -7,16 +7,10 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.snackbar.Snackbar
-import com.rotemati.foregroundsdk.foregroundtask.external.scheduler.ForegroundTasksSchedulerWrapper
-import com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.foregroundTaskInfo
-import com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.network.NetworkType
 import com.rotemati.foregroundtesterapp.R
-import com.rotemati.foregroundtesterapp.logger.TesterAppLogger
 import com.rotemati.foregroundtesterapp.model.GitHubRepo
-import com.rotemati.foregroundtesterapp.services.ReposForegroundService
 import com.rotemati.foregroundtesterapp.webservices.getNetworkService
 import kotlinx.android.synthetic.main.main_fragment.*
-import java.util.concurrent.TimeUnit
 
 class MainFragment : Fragment() {
 
@@ -41,19 +35,7 @@ class MainFragment : Fragment() {
 				.get(MainViewModel::class.java)
 
 		fetchReposButton.setOnClickListener {
-//			viewModel.onFetchReposButtonClicked()
-			TesterAppLogger.d("fetchReposButton clicked")
-			val foregroundTaskInfo = foregroundTaskInfo(11200) {
-				networkType = NetworkType.Any
-				persisted = true
-				minLatencyMillis = TimeUnit.SECONDS.toMillis(5)
-				timeoutMillis = TimeUnit.SECONDS.toMillis(15)
-			}
-			ForegroundTasksSchedulerWrapper().scheduleForegroundTask(
-					ReposForegroundService::class.java,
-					foregroundTaskInfo
-			)
-//			foregroundTasksSchedulerWrapper.cancel(11200)
+			viewModel.onFetchReposButtonClicked()
 		}
 
 		viewModel.spinner.observe(viewLifecycleOwner) { value ->

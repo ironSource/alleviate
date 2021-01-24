@@ -3,14 +3,20 @@ package com.rotemati.foregroundtesterapp.application
 import android.app.Application
 import android.util.Log
 import com.rotemati.foregroundsdk.foregroundtask.external.ForegroundSDK
+import com.rotemati.foregroundsdk.foregroundtask.external.bucketpolling.BucketPollingData
 import com.rotemati.foregroundsdk.foregroundtask.external.logger.ForegroundLogger
 import com.rotemati.foregroundtesterapp.BuildConfig
+import java.util.concurrent.TimeUnit
 
 class MainApplication : Application() {
 	override fun onCreate() {
 
 		super.onCreate()
 		ForegroundSDK.context = this
+		ForegroundSDK.bucketPollingData = BucketPollingData(
+				interval = 5000,
+				timeout = TimeUnit.MINUTES.toMillis(1)
+		)
 		ForegroundSDK.foregroundLogger = object : ForegroundLogger {
 			override val logsEnabled = BuildConfig.DEBUG
 			override val tag = "SAMPLE APP"

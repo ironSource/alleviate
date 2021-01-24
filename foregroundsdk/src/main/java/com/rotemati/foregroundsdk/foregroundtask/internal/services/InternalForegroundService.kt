@@ -5,9 +5,9 @@ import android.app.Service
 import android.content.Intent
 import com.rotemati.foregroundsdk.foregroundtask.external.ForegroundSDK
 import com.rotemati.foregroundsdk.foregroundtask.external.logger.ForegroundLogger
+import com.rotemati.foregroundsdk.foregroundtask.external.scheduler.ForegroundTasksSchedulerWrapper.Companion.ACTION_SHOW_NOTIFICATION
+import com.rotemati.foregroundsdk.foregroundtask.external.scheduler.ForegroundTasksSchedulerWrapper.Companion.EXTRA_NOTIFICATION
 import com.rotemati.foregroundsdk.foregroundtask.internal.logger.LoggerWrapper
-import com.rotemati.foregroundsdk.foregroundtask.internal.scheduler.ForegroundTasksSchedulerPost26.Companion.ACTION_SHOW_NOTIFICATION
-import com.rotemati.foregroundsdk.foregroundtask.internal.scheduler.ForegroundTasksSchedulerPost26.Companion.EXTRA_NOTIFICATION
 
 class InternalForegroundService : Service() {
 
@@ -18,13 +18,10 @@ class InternalForegroundService : Service() {
 		super.onStartCommand(intent, flags, startId)
 		try {
 			if (intent != null) {
-				val action = intent.action
-				logger.d("action from ForegroundProvider.InternalForegroundService: $action")
-				if (ACTION_SHOW_NOTIFICATION == action) {
-
+				if (ACTION_SHOW_NOTIFICATION == intent.action) {
+					val notification = intent.getParcelableExtra<Notification>(EXTRA_NOTIFICATION)
+					startForeground(notificationId, notification)
 				}
-				val notification = intent.getParcelableExtra<Notification>(EXTRA_NOTIFICATION)
-				startForeground(notificationId, notification)
 			}
 		} catch (ex: Exception) {
 			ex.message?.let { logger.e(it) }
@@ -32,5 +29,5 @@ class InternalForegroundService : Service() {
 		return START_NOT_STICKY
 	}
 
-	override fun onBind(intent: Intent?) = null
+	override fun onBind(intent: Intent?): Nothing? = null
 }

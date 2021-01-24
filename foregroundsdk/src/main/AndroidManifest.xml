@@ -13,10 +13,6 @@
 
         <service android:name="com.rotemati.foregroundsdk.foregroundtask.internal.services.InternalForegroundService" />
 
-        <service
-            android:name="com.rotemati.foregroundsdk.foregroundtask.external.jobs.ForegroundJobService"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
-
         <receiver
             android:name="com.rotemati.foregroundsdk.foregroundtask.internal.receivers.BootCompleteReceiver"
             android:exported="true">

@@ -2,6 +2,7 @@ package com.rotemati.foregroundsdk.foregroundtask.internal.repositories
 
 import androidx.annotation.WorkerThread
 import com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.ForegroundTaskInfo
+import com.rotemati.foregroundsdk.foregroundtask.internal.db.ForegroundTaskInfoDBItem
 import com.rotemati.foregroundsdk.foregroundtask.internal.db.TaskToDBItemConvertor
 import com.rotemati.foregroundsdk.foregroundtask.internal.db.TasksDBHolder
 
@@ -18,11 +19,16 @@ internal class PendingTasksRepository {
 	}
 
 	@WorkerThread
-	fun getById(id: Int): TaskInfoSpec? {
+	fun getTaskInfo(id: Int): TaskInfoSpec? {
 		val foregroundTaskInfoDBItem = db.foregroundTaskInfoDao().getById(id)
 		return foregroundTaskInfoDBItem?.let {
 			TaskInfoSpec(taskToDBItemConvertor.fromDBItem(it), it.componentName)
 		}.also { db.close() }
+	}
+
+	@WorkerThread
+	fun getDBItem(id: Int): ForegroundTaskInfoDBItem? {
+		return db.foregroundTaskInfoDao().getById(id).also { db.close() }
 	}
 
 	@WorkerThread
@@ -35,7 +41,9 @@ internal class PendingTasksRepository {
 
 	@WorkerThread
 	fun save(taskInfoSpec: TaskInfoSpec) {
+		val timestamp = System.currentTimeMillis()
 		val dbItem = taskToDBItemConvertor.toDBItem(
+				timestamp,
 				taskInfoSpec.foregroundTaskInfo,
 				taskInfoSpec.componentName
 		)

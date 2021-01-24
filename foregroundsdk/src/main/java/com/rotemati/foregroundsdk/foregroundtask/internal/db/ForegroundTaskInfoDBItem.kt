@@ -15,5 +15,6 @@ internal data class ForegroundTaskInfoDBItem(
 		@ColumnInfo(name = "timeout_millis") val timeoutMillis: Long,
 		@ColumnInfo(name = "retry_count") val retryCount: Int,
 		@ColumnInfo(name = "run_immediately") val runImmediately: Boolean,
-		@ColumnInfo(name = "component_name") val componentName: String,
+		@ColumnInfo(name = "insertion_timestamp") val insertionTimestamp: Long,
+		@ColumnInfo(name = "component_name") val componentName: String
 ) : Serializable

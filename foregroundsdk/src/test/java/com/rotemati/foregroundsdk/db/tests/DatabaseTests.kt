@@ -39,6 +39,7 @@ internal class DatabaseTests {
 			}
 			val taskInfoSpec = TaskInfoSpec(foregroundTaskInfo, javaClass.name)
 			dbItem = TaskToDBItemConvertor().toDBItem(
+					System.currentTimeMillis(),
 					taskInfoSpec.foregroundTaskInfo,
 					taskInfoSpec.componentName
 			)
@@ -67,6 +68,7 @@ internal class DatabaseTests {
 					}
 					val taskInfoSpec = TaskInfoSpec(foregroundTaskInfo, "someComponentName")
 					dbItem = dbItemConvertor.toDBItem(
+							System.currentTimeMillis(),
 							taskInfoSpec.foregroundTaskInfo,
 							taskInfoSpec.componentName
 					)
@@ -95,9 +97,9 @@ internal class DatabaseTests {
 					expectedValue = 3
 					// prepare mock data
 					tasksList = listOf(
-							dbItemConvertor.toDBItem(foregroundTaskInfo(10), "someClassName1"),
-							dbItemConvertor.toDBItem(foregroundTaskInfo(11), "someClassName2"),
-							dbItemConvertor.toDBItem(foregroundTaskInfo(21), "someClassName3")
+							dbItemConvertor.toDBItem(System.currentTimeMillis(), foregroundTaskInfo(10), "someClassName1"),
+							dbItemConvertor.toDBItem(System.currentTimeMillis(), foregroundTaskInfo(11), "someClassName2"),
+							dbItemConvertor.toDBItem(System.currentTimeMillis(), foregroundTaskInfo(21), "someClassName3")
 					)
 				}
 				act {

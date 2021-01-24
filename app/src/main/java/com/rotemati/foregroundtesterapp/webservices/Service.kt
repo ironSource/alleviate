@@ -2,11 +2,11 @@ package com.rotemati.foregroundtesterapp.webservices
 
 import com.rotemati.foregroundtesterapp.model.Repo
 import okhttp3.OkHttpClient
+import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Path
-import java.util.concurrent.Future
 
 private val service: Service by lazy {
 	val okHttpClient = OkHttpClient.Builder()
@@ -25,8 +25,5 @@ fun getNetworkService() = service
 
 interface Service {
 	@GET("users/{user}/repos")
-	suspend fun getReposSuspend(@Path("user") user: String?): List<Repo>
-
-	@GET("users/{user}/repos")
-	fun getRepos(@Path("user") user: String?): Future<List<Repo>>
+	fun getRepos(@Path("user") user: String?): Call<List<Repo>>
 }
