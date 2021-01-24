@@ -10,22 +10,22 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 
 @RequiresApi(Build.VERSION_CODES.P)
-internal fun Context.getStandbyBucket(): Int {
+internal inline fun Context.getStandbyBucket(): Int {
 	return getSystemService(UsageStatsManager::class.java).appStandbyBucket
 }
 
-internal fun Context.getNotificationManager(): NotificationManager {
+internal inline fun Context.getNotificationManager(): NotificationManager {
 	return getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 }
 
-internal fun Context.getConnectivityManager(): ConnectivityManager {
+internal inline fun Context.getConnectivityManager(): ConnectivityManager {
 	return getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 }
 
-internal fun Context.getAlarmManager(): AlarmManager {
+internal inline fun Context.getAlarmManager(): AlarmManager {
 	return getSystemService(Context.ALARM_SERVICE) as AlarmManager
 }
 
-internal fun Context.getJobScheduler(): JobScheduler {
+internal inline fun Context.getJobScheduler(): JobScheduler {
 	return getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
 }

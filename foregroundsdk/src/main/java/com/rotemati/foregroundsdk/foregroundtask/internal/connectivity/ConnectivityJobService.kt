@@ -14,7 +14,6 @@ import com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.ForegroundTas
 import com.rotemati.foregroundsdk.foregroundtask.internal.extensions.getJobScheduler
 import com.rotemati.foregroundsdk.foregroundtask.internal.logger.LoggerWrapper
 import com.rotemati.foregroundsdk.foregroundtask.internal.repositories.PendingTasksRepository
-import com.rotemati.foregroundsdk.foregroundtask.internal.repositories.TaskInfoSpec
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -36,19 +35,7 @@ internal class ConnectivityJobService : JobService() {
 		executorService.submit {
 			params?.extras?.getInt(FOREGROUND_TASK_ID)?.let { taskId ->
 				pendingTasksRepository.getTaskInfo(taskId)?.let { nonNullTask ->
-					val newTask = TaskInfoSpec(
-							foregroundTaskInfo = ForegroundTaskInfo(
-									id = nonNullTask.foregroundTaskInfo.id,
-									networkType = nonNullTask.foregroundTaskInfo.networkType,
-									persisted = nonNullTask.foregroundTaskInfo.persisted,
-									minLatencyMillis = nonNullTask.foregroundTaskInfo.minLatencyMillis,
-									timeoutMillis = nonNullTask.foregroundTaskInfo.timeoutMillis,
-									retryCount = nonNullTask.foregroundTaskInfo.retryCount,
-									runImmediately = true
-							),
-							componentName = nonNullTask.componentName
-					)
-					foregroundTasksSchedulerWrapper.scheduleForegroundTask(Class.forName(newTask.componentName), newTask.foregroundTaskInfo)
+					foregroundTasksSchedulerWrapper.scheduleForegroundTask(Class.forName(nonNullTask.componentName), nonNullTask.foregroundTaskInfo)
 				}
 			}
 		}

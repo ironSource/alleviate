@@ -10,6 +10,7 @@ import com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.ForegroundTas
 import com.rotemati.foregroundsdk.foregroundtask.internal.bucketpolling.BucketPoller
 import com.rotemati.foregroundsdk.foregroundtask.internal.bucketpolling.BucketPollingStrategyImpl
 import com.rotemati.foregroundsdk.foregroundtask.internal.extensions.getAlarmManager
+import com.rotemati.foregroundsdk.foregroundtask.internal.extensions.toDateFormat
 import com.rotemati.foregroundsdk.foregroundtask.internal.logger.LoggerWrapper
 import com.rotemati.foregroundsdk.foregroundtask.internal.notification.InternalForegroundServiceDisplayer
 import com.rotemati.foregroundsdk.foregroundtask.internal.repositories.PendingTasksRepository
@@ -19,9 +20,6 @@ import com.rotemati.foregroundsdk.foregroundtask.internal.scheduler.ForegroundTa
 import com.rotemati.foregroundsdk.foregroundtask.internal.scheduler.ForegroundTasksOperationsProviderPre26
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
-
-private const val RUN_IMMEDIATELY = 0L
 
 class ForegroundTasksSchedulerWrapper {
 
@@ -45,20 +43,32 @@ class ForegroundTasksSchedulerWrapper {
 				startBucketPolling()
 			}
 		}
-		val taskInfoSpec = TaskInfoSpec(foregroundTaskInfo, className.name)
 		executorService.submit {
-			logger.i("Scheduling task to run in ${TimeUnit.MILLISECONDS.toSeconds(taskInfoSpec.foregroundTaskInfo.minLatencyMillis)} seconds")
-			val triggerAtMillis = if (taskInfoSpec.foregroundTaskInfo.shouldRunImmediately()) {
-				RUN_IMMEDIATELY
-			} else {
-				taskInfoSpec.foregroundTaskInfo.latencyEpoch()
-			}
+			val newForegroundTaskInfo = ForegroundTaskInfo(
+					id = foregroundTaskInfo.id,
+					networkType = foregroundTaskInfo.networkType,
+					persisted = foregroundTaskInfo.persisted,
+					minLatencyMillis = foregroundTaskInfo.minLatencyMillis,
+					timeoutMillis = foregroundTaskInfo.timeoutMillis,
+					retryCount = foregroundTaskInfo.retryCount,
+					triggerTime = calculateTriggerTime(foregroundTaskInfo)
+			)
+			logger.i("Scheduling task to run at ${newForegroundTaskInfo.triggerTime.toDateFormat()}")
+			val taskInfoSpec = TaskInfoSpec(newForegroundTaskInfo, className.name)
 			pendingTasksRepository.save(taskInfoSpec)
 			context.getAlarmManager().set(
 					AlarmManager.RTC_WAKEUP,
-					triggerAtMillis,
+					newForegroundTaskInfo.triggerTime,
 					foregroundTasksOperationsProvider.createScheduleOperation(taskInfoSpec)
 			)
+		}
+	}
+
+	private fun calculateTriggerTime(foregroundTaskInfo: ForegroundTaskInfo): Long {
+		return if (foregroundTaskInfo.isScheduled()) {
+			foregroundTaskInfo.triggerTime
+		} else {
+			System.currentTimeMillis() + foregroundTaskInfo.minLatencyMillis
 		}
 	}
 

@@ -5,11 +5,11 @@ import android.app.Service
 import android.content.Intent
 import com.rotemati.foregroundsdk.foregroundtask.external.ForegroundSDK
 import com.rotemati.foregroundsdk.foregroundtask.external.logger.ForegroundLogger
-import com.rotemati.foregroundsdk.foregroundtask.external.reschedulepolicy.RetryPolicy
+import com.rotemati.foregroundsdk.foregroundtask.external.retryepolicy.RetryPolicy
 import com.rotemati.foregroundsdk.foregroundtask.external.scheduler.ForegroundTasksSchedulerWrapper
 import com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.ForegroundTaskInfo
 import com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.result.Result
-import com.rotemati.foregroundsdk.foregroundtask.internal.RetryBackoffCalculator
+import com.rotemati.foregroundsdk.foregroundtask.internal.backoff.RetryBackoffCalculator
 import com.rotemati.foregroundsdk.foregroundtask.internal.bucketpolling.BucketPoller
 import com.rotemati.foregroundsdk.foregroundtask.internal.connectivity.*
 import com.rotemati.foregroundsdk.foregroundtask.internal.logger.LoggerWrapper
@@ -105,8 +105,7 @@ abstract class BaseForegroundTaskService : Service() {
 				persisted = foregroundTaskInfo.persisted,
 				minLatencyMillis = retryBackoffCalculator.calculate(retryPolicy, newRetryCount),
 				timeoutMillis = foregroundTaskInfo.timeoutMillis,
-				retryCount = newRetryCount,
-				runImmediately = false
+				retryCount = newRetryCount
 		)
 		foregroundTasksSchedulerWrapper.scheduleForegroundTask(Class.forName(taskInfoSpec.componentName), foregroundTaskInfo)
 		finish()

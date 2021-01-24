@@ -3,6 +3,8 @@ package com.rotemati.foregroundsdk.foregroundtask.external.taskinfo
 import com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.network.NetworkType
 import java.io.Serializable
 
+private const val NOT_SCHEDULED_TIMESTAMP = -1L
+
 data class ForegroundTaskInfo(
 		val id: Int,
 		val networkType: NetworkType,
@@ -10,12 +12,10 @@ data class ForegroundTaskInfo(
 		val minLatencyMillis: Long,
 		val timeoutMillis: Long,
 		val retryCount: Int = 0,
-		val runImmediately: Boolean = false
+		val triggerTime: Long = NOT_SCHEDULED_TIMESTAMP
 ) : Serializable {
 
-	fun latencyEpoch() = System.currentTimeMillis() + minLatencyMillis
-
-	fun shouldRunImmediately() = runImmediately || minLatencyMillis == 0L
+	fun isScheduled() = triggerTime != NOT_SCHEDULED_TIMESTAMP
 
 	class Builder {
 		private var id: Int = -1

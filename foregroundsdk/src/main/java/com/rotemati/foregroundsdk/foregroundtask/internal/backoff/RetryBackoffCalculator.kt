@@ -1,6 +1,6 @@
-package com.rotemati.foregroundsdk.foregroundtask.internal
+package com.rotemati.foregroundsdk.foregroundtask.internal.backoff
 
-import com.rotemati.foregroundsdk.foregroundtask.external.reschedulepolicy.RetryPolicy
+import com.rotemati.foregroundsdk.foregroundtask.external.retryepolicy.RetryPolicy
 import java.util.concurrent.TimeUnit
 
 internal class RetryBackoffCalculator {

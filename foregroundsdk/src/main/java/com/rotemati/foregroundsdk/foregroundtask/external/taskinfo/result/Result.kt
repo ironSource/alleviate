@@ -1,6 +1,6 @@
 package com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.result
 
-import com.rotemati.foregroundsdk.foregroundtask.external.reschedulepolicy.RetryPolicy
+import com.rotemati.foregroundsdk.foregroundtask.external.retryepolicy.RetryPolicy
 
 sealed class Result {
 	object Success : Result()

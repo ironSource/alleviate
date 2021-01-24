@@ -37,7 +37,7 @@ class MainViewModel(private val repository: GitHubRepo) : ViewModel() {
 		val foregroundTaskInfo = foregroundTaskInfo(11200) {
 			networkType = NetworkType.Any
 			persisted = true
-			minLatencyMillis = TimeUnit.SECONDS.toMillis(5)
+			minLatencyMillis = TimeUnit.SECONDS.toMillis(20)
 			timeoutMillis = TimeUnit.SECONDS.toMillis(15)
 		}
 		ForegroundTasksSchedulerWrapper().scheduleForegroundTask(
