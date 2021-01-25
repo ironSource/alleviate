@@ -2,8 +2,8 @@ package com.rotemati.foregroundsdk.bucketPoller.tests
 
 import com.rotemati.foregroundsdk.bucketPoller.mocks.MockBucketPollingStrategy
 import com.rotemati.foregroundsdk.common.api.test
-import com.rotemati.foregroundsdk.foregroundtask.external.bucketpolling.BucketPollingData
-import com.rotemati.foregroundsdk.foregroundtask.internal.bucketpolling.BucketPoller
+import com.rotemati.foregroundsdk.external.bucketpolling.BucketPollingData
+import com.rotemati.foregroundsdk.internal.bucketpolling.BucketPoller
 import org.hamcrest.CoreMatchers.equalTo
 import org.junit.Assert
 import org.junit.Test

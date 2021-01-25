@@ -2,9 +2,9 @@ package com.rotemati.foregroundtesterapp.application
 
 import android.app.Application
 import android.util.Log
-import com.rotemati.foregroundsdk.foregroundtask.external.ForegroundSDK
-import com.rotemati.foregroundsdk.foregroundtask.external.bucketpolling.BucketPollingData
-import com.rotemati.foregroundsdk.foregroundtask.external.logger.ForegroundLogger
+import com.rotemati.foregroundsdk.external.ForegroundSDK
+import com.rotemati.foregroundsdk.external.bucketpolling.BucketPollingData
+import com.rotemati.foregroundsdk.external.logger.ForegroundLogger
 import com.rotemati.foregroundtesterapp.BuildConfig
 import java.util.concurrent.TimeUnit
 

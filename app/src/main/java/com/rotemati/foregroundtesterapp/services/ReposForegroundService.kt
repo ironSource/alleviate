@@ -5,9 +5,9 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import androidx.core.app.NotificationCompat
-import com.rotemati.foregroundsdk.foregroundtask.external.retryepolicy.RetryPolicy
-import com.rotemati.foregroundsdk.foregroundtask.external.services.ForegroundTaskService
-import com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.result.Result
+import com.rotemati.foregroundsdk.external.retryepolicy.RetryPolicy
+import com.rotemati.foregroundsdk.external.services.ForegroundTaskService
+import com.rotemati.foregroundsdk.external.taskinfo.result.Result
 import com.rotemati.foregroundtesterapp.R
 import com.rotemati.foregroundtesterapp.logger.TesterAppLogger
 import com.rotemati.foregroundtesterapp.model.GitHubRepo

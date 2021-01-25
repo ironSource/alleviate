@@ -1,6 +1,6 @@
 package com.rotemati.foregroundsdk.bucketPoller.mocks
 
-import com.rotemati.foregroundsdk.foregroundtask.internal.bucketpolling.BucketPollingStrategy
+import com.rotemati.foregroundsdk.internal.bucketpolling.BucketPollingStrategy
 
 private const val STANDBY_BUCKET_NEVER = 50
 

@@ -3,8 +3,8 @@ package com.rotemati.foregroundsdk.db.rules
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
-import com.rotemati.foregroundsdk.foregroundtask.internal.db.ForegroundTaskInfoDao
-import com.rotemati.foregroundsdk.foregroundtask.internal.db.TasksDatabase
+import com.rotemati.foregroundsdk.internal.db.ForegroundTaskInfoDao
+import com.rotemati.foregroundsdk.internal.db.TasksDatabase
 import org.junit.rules.ExternalResource
 
 internal class DatabaseRule : ExternalResource() {

@@ -8,20 +8,20 @@
 
     <application>
         <service
-            android:name="com.rotemati.foregroundsdk.foregroundtask.internal.connectivity.ConnectivityJobService"
+            android:name="com.rotemati.foregroundsdk.internal.connectivity.ConnectivityJobService"
             android:permission="android.permission.BIND_JOB_SERVICE" />
 
-        <service android:name="com.rotemati.foregroundsdk.foregroundtask.internal.services.InternalForegroundService" />
+        <service android:name="com.rotemati.foregroundsdk.internal.services.InternalForegroundService" />
 
         <receiver
-            android:name="com.rotemati.foregroundsdk.foregroundtask.internal.receivers.BootCompleteReceiver"
+            android:name="com.rotemati.foregroundsdk.internal.receivers.BootCompleteReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
 
-        <receiver android:name="com.rotemati.foregroundsdk.foregroundtask.internal.receivers.MyPackageReplacedReceiver">
+        <receiver android:name="com.rotemati.foregroundsdk.internal.receivers.MyPackageReplacedReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
             </intent-filter>

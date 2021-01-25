@@ -3,9 +3,9 @@ package com.rotemati.foregroundtesterapp.ui.main
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.rotemati.foregroundsdk.foregroundtask.external.scheduler.ForegroundTasksSchedulerWrapper
-import com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.foregroundTaskInfo
-import com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.network.NetworkType
+import com.rotemati.foregroundsdk.external.scheduler.ForegroundTasksSchedulerWrapper
+import com.rotemati.foregroundsdk.external.taskinfo.foregroundTaskInfo
+import com.rotemati.foregroundsdk.external.taskinfo.network.NetworkType
 import com.rotemati.foregroundtesterapp.model.GitHubRepo
 import com.rotemati.foregroundtesterapp.services.ReposForegroundService
 import java.util.concurrent.TimeUnit

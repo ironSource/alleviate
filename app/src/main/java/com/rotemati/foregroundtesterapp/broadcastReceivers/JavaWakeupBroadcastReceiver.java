@@ -4,9 +4,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.rotemati.foregroundsdk.foregroundtask.external.scheduler.ForegroundTasksSchedulerWrapper;
-import com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.ForegroundTaskInfo;
-import com.rotemati.foregroundsdk.foregroundtask.external.taskinfo.network.NetworkType;
+import com.rotemati.foregroundsdk.external.scheduler.ForegroundTasksSchedulerWrapper;
+import com.rotemati.foregroundsdk.external.taskinfo.ForegroundTaskInfo;
+import com.rotemati.foregroundsdk.external.taskinfo.network.NetworkType;
 import com.rotemati.foregroundtesterapp.services.ReposForegroundService;
 
 import java.util.concurrent.TimeUnit;
