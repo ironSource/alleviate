@@ -24,6 +24,7 @@ internal class BootCompleteReceiver : BroadcastReceiver() {
 						nonNullTaskInfoSpec.foregroundTaskInfo
 				)
 			}
+			executorService.shutdown()
 		}
 	}
 }

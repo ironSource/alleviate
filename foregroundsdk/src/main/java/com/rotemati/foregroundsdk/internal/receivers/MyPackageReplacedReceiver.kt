@@ -22,6 +22,7 @@ internal class MyPackageReplacedReceiver : BroadcastReceiver() {
 						nonNullTaskInfoSpec.foregroundTaskInfo
 				)
 			}
+			executorService.shutdown()
 		}
 	}
 }

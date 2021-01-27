@@ -38,6 +38,7 @@ internal class ConnectivityJobService : JobService() {
 					foregroundTasksSchedulerWrapper.scheduleForegroundTask(Class.forName(nonNullTask.componentName), nonNullTask.foregroundTaskInfo)
 				}
 			}
+			executorService.shutdown()
 		}
 		return false
 	}

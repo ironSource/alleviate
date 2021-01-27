@@ -91,6 +91,7 @@ abstract class BaseForegroundTaskService : Service() {
 					is Result.Reschedule -> onReschedule(taskInfoSpec, result.retryPolicy)
 				}
 			}
+			executorService.shutdown()
 		}
 
 		return START_NOT_STICKY

@@ -2,7 +2,6 @@ package com.rotemati.foregroundsdk.internal.bucketpolling
 
 import android.os.Build
 import android.os.Handler
-import android.os.Looper
 import androidx.annotation.RequiresApi
 import com.rotemati.foregroundsdk.external.ForegroundSDK
 import com.rotemati.foregroundsdk.external.logger.ForegroundLogger
@@ -15,7 +14,7 @@ private const val STANDBY_BUCKET_NEVER = 50
 internal object BucketPoller {
 
 	private val logger: ForegroundLogger = LoggerWrapper(ForegroundSDK.foregroundLogger)
-	private val handler = Handler(Looper.myLooper())
+	private val handler = Handler()
 	private var foregroundServiceStartTime: Long by notNull()
 	var pollingData = ForegroundSDK.bucketPollingData
 	var strategy: BucketPollingStrategy by notNull()

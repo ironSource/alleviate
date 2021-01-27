@@ -1,11 +1,11 @@
 package com.rotemati.foregroundsdk.external.services
 
 import android.app.Notification
-import com.rotemati.foregroundsdk.external.ForegroundSDK
-import com.rotemati.foregroundsdk.external.logger.ForegroundLogger
 import com.rotemati.foregroundsdk.external.taskinfo.result.Result
-import com.rotemati.foregroundsdk.internal.logger.LoggerWrapper
-import java.util.concurrent.*
+import java.util.concurrent.Callable
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 abstract class ForegroundTaskService : BaseForegroundTaskService() {
 
@@ -17,8 +17,6 @@ abstract class ForegroundTaskService : BaseForegroundTaskService() {
 
 	abstract fun onTimeout(): Result
 
-	abstract fun onError(e: Exception): Result
-
 	override fun startWork(): Result {
 		val callable = Callable {
 			doWork()
@@ -28,10 +26,9 @@ abstract class ForegroundTaskService : BaseForegroundTaskService() {
 			future.get(foregroundTaskInfo.timeoutMillis, TimeUnit.MILLISECONDS)
 		} catch (e: Exception) {
 			future.cancel(true)
-			when (e) {
-				is TimeoutException -> onTimeout()
-				else -> onError(e)
-			}
+			onTimeout()
+		} finally {
+			executorService.shutdown()
 		}
 	}
 }

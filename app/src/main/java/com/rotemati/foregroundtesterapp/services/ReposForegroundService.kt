@@ -36,20 +36,18 @@ class ReposForegroundService : ForegroundTaskService() {
 		return try {
 			TesterAppLogger.i("Work started")
 			val repos = GitHubRepo(getNetworkService()).getRepos().execute()
+			Thread.sleep(10000)
 			TesterAppLogger.i("${repos.body()?.size} repos fetched")
 			Result.Success
 		} catch (e: Exception) {
-			onError(e)
-		}
-	}
-
-	override fun onError(e: Exception): Result {
-		e.message?.let { TesterAppLogger.e(it) }
-		TesterAppLogger.i("retryCount: ${foregroundTaskInfo.retryCount}")
-		return if (foregroundTaskInfo.retryCount >= 3) {
-			Result.Failed
-		} else {
-			Result.Reschedule(RetryPolicy.Linear)
+			TesterAppLogger.d("onError")
+			e.message?.let { TesterAppLogger.e(it) }
+			TesterAppLogger.i("retryCount: ${foregroundTaskInfo.retryCount}")
+			return if (foregroundTaskInfo.retryCount >= 3) {
+				Result.Failed
+			} else {
+				Result.Reschedule(RetryPolicy.Linear)
+			}
 		}
 	}
 

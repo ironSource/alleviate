@@ -61,6 +61,7 @@ class ForegroundTasksSchedulerWrapper {
 					newForegroundTaskInfo.triggerTime,
 					foregroundTasksOperationsProvider.createScheduleOperation(taskInfoSpec)
 			)
+			executorService.shutdown()
 		}
 	}
 
@@ -90,6 +91,7 @@ class ForegroundTasksSchedulerWrapper {
 				)
 				pendingTasksRepository.remove(nonNullTaskSpec.foregroundTaskInfo)
 			}
+			executorService.shutdown()
 		}
 	}
 
