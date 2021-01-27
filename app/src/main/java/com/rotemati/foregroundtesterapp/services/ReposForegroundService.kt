@@ -34,17 +34,22 @@ class ReposForegroundService : ForegroundTaskService() {
 
 	override fun doWork(): Result {
 		return try {
+			TesterAppLogger.i("Work started")
 			val repos = GitHubRepo(getNetworkService()).getRepos().execute()
 			TesterAppLogger.i("${repos.body()?.size} repos fetched")
 			Result.Success
 		} catch (e: Exception) {
-			e.message?.let { TesterAppLogger.e(it) }
-			TesterAppLogger.i("retryCount: ${foregroundTaskInfo.retryCount}")
-			if (foregroundTaskInfo.retryCount >= 3) {
-				Result.Failed
-			} else {
-				Result.Reschedule(RetryPolicy.Linear)
-			}
+			onError(e)
+		}
+	}
+
+	override fun onError(e: Exception): Result {
+		e.message?.let { TesterAppLogger.e(it) }
+		TesterAppLogger.i("retryCount: ${foregroundTaskInfo.retryCount}")
+		return if (foregroundTaskInfo.retryCount >= 3) {
+			Result.Failed
+		} else {
+			Result.Reschedule(RetryPolicy.Linear)
 		}
 	}
 
@@ -54,7 +59,7 @@ class ReposForegroundService : ForegroundTaskService() {
 		return if (foregroundTaskInfo.retryCount >= 3) {
 			Result.Failed
 		} else {
-			Result.Reschedule(RetryPolicy.Linear)
+			Result.Reschedule(RetryPolicy.Exponential)
 		}
 	}
 }

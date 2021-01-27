@@ -7,39 +7,40 @@ internal class LoggerWrapper(foregroundLogger: ForegroundLogger) : ForegroundLog
 
 	override fun v(msg: String) {
 		if (logsEnabled) {
-			foregroundLogger.v(msg)
+			foregroundLogger.v("${threadName()} | $msg")
 		}
 	}
 
 	override fun d(msg: String) {
 		if (logsEnabled) {
-			foregroundLogger.d(msg)
+			foregroundLogger.d("${threadName()} | $msg")
 		}
 	}
 
 	override fun i(msg: String) {
 		if (logsEnabled) {
-			foregroundLogger.i(msg)
+			foregroundLogger.i("${threadName()} | $msg")
 		}
 	}
 
 	override fun w(msg: String) {
 		if (logsEnabled) {
-			foregroundLogger.w(msg)
+			foregroundLogger.w("${threadName()} | $msg")
 		}
 	}
 
 	override fun e(msg: String) {
 		if (logsEnabled) {
-			foregroundLogger.e(msg)
+			foregroundLogger.e("${threadName()} | $msg")
 		}
 	}
 
 	override fun wtf(msg: String) {
 		if (logsEnabled) {
-			foregroundLogger.wtf(msg)
+			foregroundLogger.wtf("${threadName()} | $msg")
 		}
 	}
 
+	private fun threadName(): String = Thread.currentThread().name
 }
 

@@ -5,12 +5,11 @@ import com.rotemati.foregroundsdk.external.ForegroundSDK
 import com.rotemati.foregroundsdk.external.logger.ForegroundLogger
 import com.rotemati.foregroundsdk.external.taskinfo.result.Result
 import com.rotemati.foregroundsdk.internal.logger.LoggerWrapper
-import java.util.*
+import java.util.concurrent.*
 
 abstract class ForegroundTaskService : BaseForegroundTaskService() {
 
-	private val logger: ForegroundLogger = LoggerWrapper(ForegroundSDK.foregroundLogger)
-	private val timer: Timer = Timer()
+	private val executorService: ExecutorService = Executors.newSingleThreadExecutor()
 
 	abstract override fun getNotification(): Notification
 
@@ -18,17 +17,21 @@ abstract class ForegroundTaskService : BaseForegroundTaskService() {
 
 	abstract fun onTimeout(): Result
 
+	abstract fun onError(e: Exception): Result
+
 	override fun startWork(): Result {
-		val timerTask = object : TimerTask() {
-			override fun run() {
-				timer.cancel()
-				onTimeout()
-			}
+		val callable = Callable {
+			doWork()
 		}
-		timer.schedule(timerTask, foregroundTaskInfo.timeoutMillis)
-		return doWork().also {
-			logger.d("cancel timer")
-			timer.cancel()
+		val future = executorService.submit(callable)
+		return try {
+			future.get(foregroundTaskInfo.timeoutMillis, TimeUnit.MILLISECONDS)
+		} catch (e: Exception) {
+			future.cancel(true)
+			when (e) {
+				is TimeoutException -> onTimeout()
+				else -> onError(e)
+			}
 		}
 	}
 }
