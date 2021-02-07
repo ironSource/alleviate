@@ -1,45 +1,36 @@
 package com.rotemati.foregroundsdk.internal.repositories
 
-import androidx.annotation.WorkerThread
+import android.content.Context
 import com.rotemati.foregroundsdk.external.taskinfo.ForegroundTaskInfo
-import com.rotemati.foregroundsdk.internal.db.TaskToDBItemConvertor
-import com.rotemati.foregroundsdk.internal.db.TasksDBHolder
+import com.rotemati.foregroundsdk.internal.prefs.SharedPreferencesProxy
 
-internal class PendingTasksRepository {
+private const val PREFS_FILE = "com.rotemati.TASKS_REPO_FILE"
 
-	private val db = TasksDBHolder.db
-	private val taskToDBItemConvertor = TaskToDBItemConvertor()
+internal class PendingTasksRepository(context: Context) {
 
-	@WorkerThread
+	private val dbItemToTaskInfoConverter = TaskDBItemToTaskInfoConverter()
+	private val dataStore = SharedPreferencesProxy(context, PREFS_FILE)
+
 	fun getAll(): List<TaskInfoSpec> {
-		return db.foregroundTaskInfoDao().getAll().map {
-			TaskInfoSpec(taskToDBItemConvertor.fromDBItem(it), it.componentName)
-		}.also { db.close() }
+		return dataStore.getAll().map {
+			dbItemToTaskInfoConverter.toTaskInfo(it)
+		}
 	}
 
-	@WorkerThread
 	fun getTaskInfo(id: Int): TaskInfoSpec? {
-		val foregroundTaskInfoDBItem = db.foregroundTaskInfoDao().getById(id)
+		val foregroundTaskInfoDBItem = dataStore.getById(id)
 		return foregroundTaskInfoDBItem?.let {
-			TaskInfoSpec(taskToDBItemConvertor.fromDBItem(it), it.componentName)
-		}.also { db.close() }
+			dbItemToTaskInfoConverter.toTaskInfo(it)
+		}
 	}
 
-	@WorkerThread
-	fun remove(foregroundTaskInfo: ForegroundTaskInfo) {
-		val savedTaskInfo = db.foregroundTaskInfoDao().getById(foregroundTaskInfo.id)
-		savedTaskInfo?.let {
-			db.foregroundTaskInfoDao().delete(savedTaskInfo)
-		}.also { db.close() }
+	fun delete(id: Int) {
+		dataStore.delete(id)
 	}
 
-	@WorkerThread
-	fun save(taskInfoSpec: TaskInfoSpec) {
-		val dbItem = taskToDBItemConvertor.toDBItem(
-				taskInfoSpec.foregroundTaskInfo,
-				taskInfoSpec.componentName
-		)
-		db.foregroundTaskInfoDao().insert(dbItem).also { db.close() }
+	fun insert(taskInfoSpec: TaskInfoSpec) {
+		val dbItem = dbItemToTaskInfoConverter.toDBItem(taskInfoSpec)
+		dataStore.insert(dbItem)
 	}
 }
 

@@ -34,7 +34,8 @@ class MainViewModel(private val repository: GitHubRepo) : ViewModel() {
 	}
 
 	fun onFetchReposButtonClicked() {
-		val foregroundTaskInfo = foregroundTaskInfo(11200) {
+		val foregroundTaskInfo = foregroundTaskInfo {
+			id = 11200
 			networkType = NetworkType.Any
 			persisted = true
 			minLatencyMillis = TimeUnit.SECONDS.toMillis(5)

@@ -7,6 +7,7 @@ import android.content.Context
 import androidx.core.app.NotificationCompat
 import com.rotemati.foregroundsdk.external.retryepolicy.RetryPolicy
 import com.rotemati.foregroundsdk.external.services.ForegroundTaskService
+import com.rotemati.foregroundsdk.external.stopinfo.StoppedCause
 import com.rotemati.foregroundsdk.external.taskinfo.result.Result
 import com.rotemati.foregroundtesterapp.R
 import com.rotemati.foregroundtesterapp.logger.TesterAppLogger
@@ -51,7 +52,27 @@ class ReposForegroundService : ForegroundTaskService() {
 		}
 	}
 
-	override fun onTimeout(): Result {
+	override fun onStop(stoppedCause: StoppedCause): Result {
+		return when (stoppedCause) {
+			StoppedCause.Timeout -> onTimeout()
+			StoppedCause.ConnectionNotAllowed -> onNoConnectivity()
+			StoppedCause.TerminatedBySystem -> onTerminatedBySystem()
+		}
+	}
+
+	private fun onTerminatedBySystem(): Result {
+		TesterAppLogger.d("onTerminatedBySystem")
+//		return Result.Reschedule(RetryPolicy.Linear)
+		return Result.Failed
+	}
+
+	private fun onNoConnectivity(): Result {
+		TesterAppLogger.d("NoConnectivity")
+//		return Result.Reschedule(RetryPolicy.Linear)
+		return Result.Failed
+	}
+
+	private fun onTimeout(): Result {
 		TesterAppLogger.d("onTimeout")
 		TesterAppLogger.i("retryCount: ${foregroundTaskInfo.retryCount}")
 		return if (foregroundTaskInfo.retryCount >= 3) {

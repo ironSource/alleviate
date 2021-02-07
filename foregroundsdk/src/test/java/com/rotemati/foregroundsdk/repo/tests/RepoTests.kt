@@ -1,15 +1,13 @@
-package com.rotemati.foregroundsdk.db.tests
+package com.rotemati.foregroundsdk.repo.tests
 
+import androidx.test.core.app.ApplicationProvider
 import com.rotemati.foregroundsdk.common.api.test
-import com.rotemati.foregroundsdk.db.rules.DatabaseRule
 import com.rotemati.foregroundsdk.external.taskinfo.foregroundTaskInfo
 import com.rotemati.foregroundsdk.external.taskinfo.network.NetworkType
-import com.rotemati.foregroundsdk.internal.db.ForegroundTaskInfoDBItem
-import com.rotemati.foregroundsdk.internal.db.TaskToDBItemConvertor
+import com.rotemati.foregroundsdk.internal.repositories.PendingTasksRepository
 import com.rotemati.foregroundsdk.internal.repositories.TaskInfoSpec
 import org.hamcrest.CoreMatchers.equalTo
 import org.junit.Assert.assertThat
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -17,35 +15,30 @@ import java.util.concurrent.TimeUnit
 import kotlin.properties.Delegates.notNull
 
 @RunWith(RobolectricTestRunner::class)
-internal class DatabaseTests {
+internal class RepoTests {
 
-	@get:Rule val db = DatabaseRule()
-
-	private val dbItemConvertor = TaskToDBItemConvertor()
+	private val repository = PendingTasksRepository(ApplicationProvider.getApplicationContext())
 
 	@Test
 	fun `WHEN adding new task to db THEN the new inserted task id SHOULD first task id`() = test {
 		var taskId: Int by notNull()
 		var actualValue: Int? = null
-		var dbItem: ForegroundTaskInfoDBItem by notNull()
+		var taskInfoSpec: TaskInfoSpec by notNull()
 		arrange {
 			// prepare mock data
 			taskId = 909192
-			val foregroundTaskInfo = foregroundTaskInfo(taskId) {
+			val foregroundTaskInfo = foregroundTaskInfo {
+				id = taskId
 				networkType = NetworkType.Any
 				persisted = true
 				minLatencyMillis = TimeUnit.SECONDS.toMillis(5)
 				timeoutMillis = TimeUnit.SECONDS.toMillis(15)
 			}
-			val taskInfoSpec = TaskInfoSpec(foregroundTaskInfo, javaClass.name)
-			dbItem = TaskToDBItemConvertor().toDBItem(
-					taskInfoSpec.foregroundTaskInfo,
-					taskInfoSpec.componentName
-			)
+			taskInfoSpec = TaskInfoSpec(foregroundTaskInfo, javaClass.name)
 		}
 		act {
-			db.tasksDao.insert(dbItem)
-			actualValue = db.tasksDao.getById(taskId)?.id
+			repository.insert(taskInfoSpec)
+			actualValue = repository.getTaskInfo(taskId)?.foregroundTaskInfo?.id
 		}
 		assert { assertThat(actualValue, equalTo(taskId)) }
 	}
@@ -54,27 +47,24 @@ internal class DatabaseTests {
 	fun `WHEN adding new task to db THEN delete it the returned task from db SHOULD be null`() =
 			test {
 				var taskId: Int by notNull()
-				var actualValue: ForegroundTaskInfoDBItem? = null
-				var dbItem: ForegroundTaskInfoDBItem by notNull()
+				var actualValue: TaskInfoSpec? = null
+				var taskInfoSpec: TaskInfoSpec by notNull()
 				arrange {
 					// prepare mock data
 					taskId = 909
-					val foregroundTaskInfo = foregroundTaskInfo(taskId) {
+					val foregroundTaskInfo = foregroundTaskInfo {
+						id = taskId
 						networkType = NetworkType.Any
 						persisted = true
 						minLatencyMillis = TimeUnit.SECONDS.toMillis(5)
 						timeoutMillis = TimeUnit.SECONDS.toMillis(15)
 					}
-					val taskInfoSpec = TaskInfoSpec(foregroundTaskInfo, "someComponentName")
-					dbItem = dbItemConvertor.toDBItem(
-							taskInfoSpec.foregroundTaskInfo,
-							taskInfoSpec.componentName
-					)
+					taskInfoSpec = TaskInfoSpec(foregroundTaskInfo, "someComponentName")
 				}
 				act {
-					db.tasksDao.insert(dbItem)
-					db.tasksDao.delete(dbItem)
-					actualValue = db.tasksDao.getById(taskId)
+					repository.insert(taskInfoSpec)
+					repository.delete(taskInfoSpec.foregroundTaskInfo.id)
+					actualValue = repository.getTaskInfo(taskInfoSpec.foregroundTaskInfo.id)
 				}
 				assert {
 					assertThat(actualValue, equalTo(null))
@@ -87,24 +77,23 @@ internal class DatabaseTests {
 			test {
 				var expectedValue: Int by notNull()
 				var actualValue: Int by notNull()
-				var tasksList: List<ForegroundTaskInfoDBItem> by notNull()
+				var tasksList: List<TaskInfoSpec> by notNull()
 				arrange {
-					if (db.tasksDao.getAll().isNotEmpty()) {
+					if (repository.getAll().isNotEmpty()) {
 						throw IllegalStateException("the db should be empty")
 					}
 					expectedValue = 3
 					// prepare mock data
 					tasksList = listOf(
-							dbItemConvertor.toDBItem(foregroundTaskInfo(10), "someClassName1"),
-							dbItemConvertor.toDBItem(foregroundTaskInfo(11), "someClassName2"),
-							dbItemConvertor.toDBItem(foregroundTaskInfo(21), "someClassName3")
+							TaskInfoSpec(foregroundTaskInfo { id = 1 }, "someClassName1"),
+							TaskInfoSpec(foregroundTaskInfo { id = 2 }, "someClassName2"),
+							TaskInfoSpec(foregroundTaskInfo { id = 3 }, "someClassName3")
 					)
 				}
 				act {
-					tasksList.forEach { db.tasksDao.insert(it) }
-					actualValue = db.tasksDao.getAll().size
+					tasksList.forEach { repository.insert(it) }
+					actualValue = repository.getAll().size
 				}
 				assert { assertThat(actualValue, equalTo(expectedValue)) }
 			}
-
 }

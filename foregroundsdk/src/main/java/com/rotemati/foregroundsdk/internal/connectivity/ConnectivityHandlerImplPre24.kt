@@ -4,20 +4,29 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import com.rotemati.foregroundsdk.external.ForegroundSdk
 import com.rotemati.foregroundsdk.internal.extensions.getConnectivityManager
 
 private const val ACTION_CONNECTIVITY_CHANGE = "android.net.conn.CONNECTIVITY_CHANGE"
 
 internal class ConnectivityHandlerImplPre24 : ConnectivityHandler, BroadcastReceiver() {
 
-	override var hasInternetAccess = false
+	private var onConnectivityChanged: () -> Unit = {}
 
-	override var isBlocked = false
+	override val connected
+		get() = isConnected(ForegroundSdk.context)
+
+	override val roaming: Boolean
+		get() = isRoamingOld(ForegroundSdk.context)
+
+	override val blocked = false
+
+	override fun setConnectivityListener(listener: () -> Unit) {
+		this.onConnectivityChanged = listener
+	}
 
 	override fun onReceive(context: Context?, intent: Intent?) {
-		context?.let { nonNullContext ->
-			hasInternetAccess = isConnected(nonNullContext)
-		}
+		onConnectivityChanged()
 	}
 
 	override fun register(context: Context) {

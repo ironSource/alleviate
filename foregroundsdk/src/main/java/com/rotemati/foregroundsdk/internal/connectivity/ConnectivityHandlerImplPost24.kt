@@ -3,31 +3,68 @@ package com.rotemati.foregroundsdk.internal.connectivity
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
+import android.net.NetworkCapabilities
 import android.os.Build
 import androidx.annotation.RequiresApi
+import com.rotemati.foregroundsdk.external.ForegroundSdk
+import com.rotemati.foregroundsdk.external.logger.ForegroundLogger
 import com.rotemati.foregroundsdk.internal.extensions.getConnectivityManager
+import com.rotemati.foregroundsdk.internal.logger.LoggerWrapper
 
 @RequiresApi(Build.VERSION_CODES.N)
 internal class ConnectivityHandlerImplPost24 : ConnectivityManager.NetworkCallback(), ConnectivityHandler {
 
-	override fun onAvailable(network: Network) {
-		super.onAvailable(network)
-		hasInternetAccess = true
+	private val logger: ForegroundLogger = LoggerWrapper(ForegroundSdk.logger)
+	private var onConnectivityChanged: () -> Unit = {}
+
+	override val connected: Boolean
+		get() = isConnected(ForegroundSdk.context)
+
+	override val roaming: Boolean
+		get() = isRoaming(ForegroundSdk.context)
+
+	override var blocked = false
+
+	override fun setConnectivityListener(listener: () -> Unit) {
+		this.onConnectivityChanged = listener
+	}
+
+	override fun onLost(network: Network) {
+		super.onLost(network)
+		logger.d("onLost")
+		onConnectivityChanged()
+	}
+
+	override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
+		super.onCapabilitiesChanged(network, networkCapabilities)
+		logger.d("onCapabilitiesChanged")
+		onConnectivityChanged()
 	}
 
 	override fun onUnavailable() {
 		super.onUnavailable()
-		hasInternetAccess = false
+		logger.d("onUnavailable")
+		onConnectivityChanged()
+	}
+
+	override fun onLosing(network: Network, maxMsToLive: Int) {
+		super.onLosing(network, maxMsToLive)
+		logger.d("onLosing")
+		onConnectivityChanged()
+	}
+
+	override fun onAvailable(network: Network) {
+		super.onAvailable(network)
+		logger.d("onAvailable")
+		onConnectivityChanged()
 	}
 
 	override fun onBlockedStatusChanged(network: Network, blocked: Boolean) {
 		super.onBlockedStatusChanged(network, blocked)
-		isBlocked = blocked
+		logger.d("onBlockedStatusChanged")
+		this.blocked = blocked
+		onConnectivityChanged()
 	}
-
-	override var hasInternetAccess = false
-
-	override var isBlocked = false
 
 	override fun register(context: Context) {
 		context.getConnectivityManager().registerDefaultNetworkCallback(this)
@@ -35,5 +72,31 @@ internal class ConnectivityHandlerImplPost24 : ConnectivityManager.NetworkCallba
 
 	override fun unregister(context: Context) {
 		context.getConnectivityManager().unregisterNetworkCallback(this)
+	}
+
+	private fun getNetworkCapabilities(context: Context): NetworkCapabilities? {
+		val connectivityManager = context.getConnectivityManager()
+		val activeNetwork = connectivityManager.activeNetwork
+		if (activeNetwork == null) {
+			logger.i("No active network found")
+			// There's no active network
+			return null
+		}
+		return connectivityManager.getNetworkCapabilities(activeNetwork)
+	}
+
+	private fun isConnected(context: Context): Boolean {
+		return getNetworkCapabilities(context)?.let {
+			it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) || it.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) || it.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) || it.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH)
+		} ?: false
+	}
+
+	private fun isRoaming(context: Context): Boolean {
+		val networkCapabilities = getNetworkCapabilities(context) ?: return false // Network capabilities not found
+		return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+			isConnected(context) && !networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_ROAMING)
+		} else {
+			isRoamingOld(context)
+		}
 	}
 }

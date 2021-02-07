@@ -11,7 +11,8 @@ import java.util.concurrent.TimeUnit
 
 class WakeupBroadcastReceiver : BroadcastReceiver() {
 	override fun onReceive(context: Context, intent: Intent?) {
-		val foregroundTaskInfo = foregroundTaskInfo(11200) {
+		val foregroundTaskInfo = foregroundTaskInfo {
+			id = 12341
 			networkType = NetworkType.Any
 			persisted = true
 			minLatencyMillis = TimeUnit.SECONDS.toMillis(0)

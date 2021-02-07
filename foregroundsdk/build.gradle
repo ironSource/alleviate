@@ -15,12 +15,7 @@ android {
         versionCode VERSION_CODE
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles "consumer-rules.pro"
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
-            }
-        }
+        consumerProguardFiles "consumer-rules.pro" //test proguard - what happens when run release?
     }
 
     buildTypes {
@@ -34,24 +29,16 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
 }
 
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$KOTLIN_VERSION"
     implementation "androidx.core:core-ktx:$ANDROIDX_CORE"
-    implementation "androidx.room:room-runtime:$ROOM_VERSION"
-    kapt "androidx.room:room-compiler:$ROOM_VERSION"
+    implementation "com.ironsource.aura.dslint:dslint-annotations:$DSLINT_VERSION"
+    lintPublish "com.ironsource.aura.dslint:dslint-checks:$DSLINT_VERSION"
 
     // Tests
     testImplementation "org.robolectric:robolectric:$ROBOLECTRIC_VERSION"
     testImplementation 'androidx.test.ext:junit-ktx:1.1.2'
-    testImplementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
 }

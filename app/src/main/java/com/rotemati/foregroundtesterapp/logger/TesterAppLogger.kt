@@ -8,27 +8,29 @@ class TesterAppLogger {
 
 	companion object {
 		fun v(msg: String) {
-			Log.v(TAG, msg)
+			Log.v(TAG, "${threadName()} | $msg")
 		}
 
 		fun d(msg: String) {
-			Log.d(TAG, msg)
+			Log.d(TAG, "${threadName()} | $msg")
 		}
 
 		fun i(msg: String) {
-			Log.i(TAG, msg)
+			Log.i(TAG, "${threadName()} | $msg")
 		}
 
 		fun w(msg: String) {
-			Log.w(TAG, msg)
+			Log.w(TAG, "${threadName()} | $msg")
 		}
 
 		fun e(msg: String) {
-			Log.e(TAG, msg)
+			Log.e(TAG, "${threadName()} | $msg")
 		}
 
 		fun wtf(msg: String) {
-			Log.wtf(TAG, msg)
+			Log.wtf(TAG, "${threadName()} | $msg")
 		}
+
+		private fun threadName(): String = Thread.currentThread().name
 	}
 }

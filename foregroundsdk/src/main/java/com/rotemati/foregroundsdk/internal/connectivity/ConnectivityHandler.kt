@@ -9,12 +9,17 @@ internal interface ConnectivityHandler {
 
 	fun unregister(context: Context)
 
-	var hasInternetAccess: Boolean
+	val connected: Boolean
 
-	var isBlocked: Boolean
+	val blocked: Boolean
 
-	fun isRoaming(context: Context): Boolean {
-		val networkInfo = context.getConnectivityManager().activeNetworkInfo
+	val roaming: Boolean
+
+	fun setConnectivityListener(listener: () -> Unit)
+
+	fun isRoamingOld(context: Context): Boolean {
+		val connectivityManager = context.getConnectivityManager()
+		val networkInfo = connectivityManager.activeNetworkInfo
 		return networkInfo != null && networkInfo.isConnected && networkInfo.isRoaming
 	}
 }

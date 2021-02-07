@@ -5,13 +5,12 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.Manifest.permission.ACCESS_NETWORK_STATE" />
 
     <application>
         <service
             android:name="com.rotemati.foregroundsdk.internal.connectivity.ConnectivityJobService"
             android:permission="android.permission.BIND_JOB_SERVICE" />
-
-        <service android:name="com.rotemati.foregroundsdk.internal.services.InternalForegroundService" />
 
         <receiver
             android:name="com.rotemati.foregroundsdk.internal.receivers.BootCompleteReceiver"

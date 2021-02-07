@@ -1,6 +1,7 @@
 package com.rotemati.foregroundsdk.external.services
 
 import android.app.Notification
+import com.rotemati.foregroundsdk.external.stopinfo.StoppedCause
 import com.rotemati.foregroundsdk.external.taskinfo.result.Result
 import java.util.concurrent.Callable
 import java.util.concurrent.ExecutorService
@@ -15,7 +16,15 @@ abstract class ForegroundTaskService : BaseForegroundTaskService() {
 
 	abstract fun doWork(): Result
 
-	abstract fun onTimeout(): Result
+	abstract fun onStop(stoppedCause: StoppedCause): Result
+
+	override fun doStop(stoppedCause: StoppedCause): Result {
+		return if (!executorService.isShutdown) {
+			onStop(stoppedCause).also { executorService.shutdownNow() }
+		} else {
+			Result.AlreadyFinished
+		}
+	}
 
 	override fun startWork(): Result {
 		val callable = Callable {
@@ -26,9 +35,9 @@ abstract class ForegroundTaskService : BaseForegroundTaskService() {
 			future.get(foregroundTaskInfo.timeoutMillis, TimeUnit.MILLISECONDS)
 		} catch (e: Exception) {
 			future.cancel(true)
-			onTimeout()
+			onStop(StoppedCause.Timeout)
 		} finally {
-			executorService.shutdown()
+			executorService.shutdownNow()
 		}
 	}
 }

@@ -3,22 +3,19 @@ package com.rotemati.foregroundsdk.external.services
 import android.app.Notification
 import android.app.Service
 import android.content.Intent
-import com.rotemati.foregroundsdk.external.ForegroundSDK
+import com.rotemati.foregroundsdk.external.ForegroundSdk
 import com.rotemati.foregroundsdk.external.logger.ForegroundLogger
 import com.rotemati.foregroundsdk.external.retryepolicy.RetryPolicy
 import com.rotemati.foregroundsdk.external.scheduler.ForegroundTasksSchedulerWrapper
+import com.rotemati.foregroundsdk.external.stopinfo.StoppedCause
 import com.rotemati.foregroundsdk.external.taskinfo.ForegroundTaskInfo
 import com.rotemati.foregroundsdk.external.taskinfo.result.Result
 import com.rotemati.foregroundsdk.internal.backoff.RetryBackoffCalculator
-import com.rotemati.foregroundsdk.internal.bucketpolling.BucketPoller
 import com.rotemati.foregroundsdk.internal.connectivity.*
 import com.rotemati.foregroundsdk.internal.logger.LoggerWrapper
 import com.rotemati.foregroundsdk.internal.notification.DefaultNotificationCreator
 import com.rotemati.foregroundsdk.internal.repositories.PendingTasksRepository
 import com.rotemati.foregroundsdk.internal.repositories.TaskInfoSpec
-import java.util.*
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
 private const val TASK_ID_NOT_VALID = -1
 private const val DEFAULT_NOTIFICATION_ID = 654321
@@ -33,13 +30,15 @@ abstract class BaseForegroundTaskService : Service() {
 	private lateinit var getConnectivityState: GetConnectivityState
 	private lateinit var getConnectivityAllowance: GetConnectivityAllowance
 	lateinit var foregroundTaskInfo: ForegroundTaskInfo
-	private val executorService: ExecutorService = Executors.newSingleThreadExecutor()
+	private var finishedGracefully: Boolean = false
 
-	private val logger: ForegroundLogger = LoggerWrapper(ForegroundSDK.foregroundLogger)
+	private val logger: ForegroundLogger = LoggerWrapper(ForegroundSdk.logger)
 
 	abstract fun startWork(): Result
 
 	abstract fun getNotification(): Notification
+
+	abstract fun doStop(stoppedCause: StoppedCause): Result
 
 	override fun onCreate() {
 		super.onCreate()
@@ -50,16 +49,24 @@ abstract class BaseForegroundTaskService : Service() {
 			ConnectivityHandlerImplPre24()
 		}
 		connectivityHandler.register(this)
-		getConnectivityState = GetConnectivityState(this, connectivityHandler)
+		getConnectivityState = GetConnectivityState(connectivityHandler)
 		getConnectivityAllowance = GetConnectivityAllowance()
-		pendingTasksRepository = PendingTasksRepository()
+		pendingTasksRepository = PendingTasksRepository(this)
 		defaultNotificationCreator = DefaultNotificationCreator()
 		retryBackoffCalculator = RetryBackoffCalculator()
 	}
 
+	override fun onDestroy() {
+		super.onDestroy()
+		logger.d("finishedGracefully onDestroy: $finishedGracefully")
+		if (!finishedGracefully) {
+			doStop(StoppedCause.TerminatedBySystem)
+		}
+	}
+
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 		super.onStartCommand(intent, flags, startId)
-		BucketPoller.onNoLongerNeeded("Task is triggered")
+		logger.d("finishedGracefully onStartCommand: $finishedGracefully")
 		if (intent == null) {
 			onError("intent is null")
 			return START_NOT_STICKY
@@ -70,30 +77,38 @@ abstract class BaseForegroundTaskService : Service() {
 			onError("job id not valid")
 			return START_NOT_STICKY
 		}
-		executorService.submit {
-			val taskInfoSpec = pendingTasksRepository.getTaskInfo(jobId)
-			if (taskInfoSpec == null) {
-				onError("job isn't in the repo")
-				return@submit
-			} else {
-				foregroundTaskInfo = taskInfoSpec.foregroundTaskInfo
-				val connectivityAllowance = getConnectivityAllowance(foregroundTaskInfo.networkType, getConnectivityState())
-				if (connectivityAllowance is ConnectivityAllowance.NotAllowed) {
-					onError(connectivityAllowance.reason, foregroundTaskInfo.id)
-					logger.i("Scheduling connectivity job service")
-					ConnectivityJobService.schedule(this, foregroundTaskInfo)
-					return@submit
-				}
-				startForeground(foregroundTaskInfo.id, getNotification())
-				when (val result = startWork()) {
-					is Result.Success -> onSuccess()
-					is Result.Failed -> onFailed()
-					is Result.Reschedule -> onReschedule(taskInfoSpec, result.retryPolicy)
+		val taskInfoSpec = pendingTasksRepository.getTaskInfo(jobId)
+		if (taskInfoSpec == null) {
+			onError("job isn't in the repo")
+			return START_NOT_STICKY
+		} else {
+			foregroundTaskInfo = taskInfoSpec.foregroundTaskInfo
+			val connectivityAllowance = getConnectivityAllowance(foregroundTaskInfo.networkType, getConnectivityState)
+			if (connectivityAllowance is ConnectivityAllowance.NotAllowed) {
+				onError(connectivityAllowance.reason, foregroundTaskInfo.id)
+				logger.i("Scheduling connectivity job service")
+				ConnectivityJobService.schedule(this, foregroundTaskInfo)
+				return START_NOT_STICKY
+			}
+			connectivityHandler.setConnectivityListener {
+				logger.d("onConnectivityEvent")
+				if (!finishedGracefully) {
+					if (getConnectivityAllowance(foregroundTaskInfo.networkType, getConnectivityState) is ConnectivityAllowance.NotAllowed) {
+						logger.d("ConnectionNotAllowed")
+						doStop(StoppedCause.ConnectionNotAllowed)
+					}
+				} else {
+					logger.d("ignoring onConnectivityEvent - service finished gracefully")
 				}
 			}
-			executorService.shutdown()
+			startForeground(foregroundTaskInfo.id, getNotification())
+			when (val result = startWork()) {
+				is Result.Success -> onSuccess()
+				is Result.Failed -> onFailed()
+				is Result.Reschedule -> onReschedule(taskInfoSpec, result.retryPolicy)
+				is Result.AlreadyFinished -> logger.d("AlreadyFinished")
+			}
 		}
-
 		return START_NOT_STICKY
 	}
 
@@ -108,19 +123,22 @@ abstract class BaseForegroundTaskService : Service() {
 				timeoutMillis = foregroundTaskInfo.timeoutMillis,
 				retryCount = newRetryCount
 		)
-		foregroundTasksSchedulerWrapper.scheduleForegroundTask(Class.forName(taskInfoSpec.componentName), foregroundTaskInfo)
+		foregroundTasksSchedulerWrapper.scheduleForegroundTask(
+				Class.forName(taskInfoSpec.componentName),
+				foregroundTaskInfo
+		)
 		finish()
 	}
 
 	private fun onFailed() {
 		logger.i("Task failed - removing it from repo")
-		pendingTasksRepository.remove(foregroundTaskInfo)
+		pendingTasksRepository.delete(foregroundTaskInfo.id)
 		finish()
 	}
 
 	private fun onSuccess() {
 		logger.i("Task completed successfully - removing it from repo")
-		pendingTasksRepository.remove(foregroundTaskInfo)
+		pendingTasksRepository.delete(foregroundTaskInfo.id)
 		finish()
 	}
 
@@ -131,8 +149,10 @@ abstract class BaseForegroundTaskService : Service() {
 	}
 
 	private fun finish() {
+		finishedGracefully = true
 		stopForeground(true)
 		connectivityHandler.unregister(this)
+		logger.d("stopSelf")
 		stopSelf()
 	}
 

@@ -7,15 +7,13 @@ import android.app.job.JobService
 import android.content.ComponentName
 import android.content.Context
 import android.os.PersistableBundle
-import com.rotemati.foregroundsdk.external.ForegroundSDK
+import com.rotemati.foregroundsdk.external.ForegroundSdk
 import com.rotemati.foregroundsdk.external.logger.ForegroundLogger
 import com.rotemati.foregroundsdk.external.scheduler.ForegroundTasksSchedulerWrapper
 import com.rotemati.foregroundsdk.external.taskinfo.ForegroundTaskInfo
 import com.rotemati.foregroundsdk.internal.extensions.getJobScheduler
 import com.rotemati.foregroundsdk.internal.logger.LoggerWrapper
 import com.rotemati.foregroundsdk.internal.repositories.PendingTasksRepository
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
 private const val JOB_SERVICE_ID = 12
 private const val FOREGROUND_TASK_ID = "FOREGROUND_TASK_ID"
@@ -24,21 +22,18 @@ internal class ConnectivityJobService : JobService() {
 
 	private lateinit var foregroundTasksSchedulerWrapper: ForegroundTasksSchedulerWrapper
 	private lateinit var pendingTasksRepository: PendingTasksRepository
-	private val executorService: ExecutorService = Executors.newSingleThreadExecutor()
 
 	override fun onCreate() {
 		foregroundTasksSchedulerWrapper = ForegroundTasksSchedulerWrapper()
-		pendingTasksRepository = PendingTasksRepository()
+		pendingTasksRepository = PendingTasksRepository(this)
 	}
 
 	override fun onStartJob(params: JobParameters?): Boolean {
-		executorService.submit {
-			params?.extras?.getInt(FOREGROUND_TASK_ID)?.let { taskId ->
-				pendingTasksRepository.getTaskInfo(taskId)?.let { nonNullTask ->
-					foregroundTasksSchedulerWrapper.scheduleForegroundTask(Class.forName(nonNullTask.componentName), nonNullTask.foregroundTaskInfo)
-				}
+		logger.d("onStartJob")
+		params?.extras?.getInt(FOREGROUND_TASK_ID)?.let { taskId ->
+			pendingTasksRepository.getTaskInfo(taskId)?.let { nonNullTask ->
+				foregroundTasksSchedulerWrapper.scheduleForegroundTask(Class.forName(nonNullTask.componentName), nonNullTask.foregroundTaskInfo)
 			}
-			executorService.shutdown()
 		}
 		return false
 	}
@@ -46,7 +41,7 @@ internal class ConnectivityJobService : JobService() {
 	override fun onStopJob(params: JobParameters?) = false
 
 	companion object {
-		private val logger: ForegroundLogger = LoggerWrapper(ForegroundSDK.foregroundLogger)
+		private val logger: ForegroundLogger = LoggerWrapper(ForegroundSdk.logger)
 		private val converter = NetworkTypeToJobSchedulerConverter()
 
 		fun schedule(
