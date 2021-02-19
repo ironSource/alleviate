@@ -27,13 +27,7 @@ class ForegroundTasksSchedulerWrapper {
 			}
 
 	fun scheduleForegroundTask(className: Class<*>, foregroundTaskInfo: ForegroundTaskInfo) {
-		val newForegroundTaskInfo = ForegroundTaskInfo(
-				id = foregroundTaskInfo.id,
-				networkType = foregroundTaskInfo.networkType,
-				persisted = foregroundTaskInfo.persisted,
-				minLatencyMillis = foregroundTaskInfo.minLatencyMillis,
-				timeoutMillis = foregroundTaskInfo.timeoutMillis,
-				retryCount = foregroundTaskInfo.retryCount,
+		val newForegroundTaskInfo = foregroundTaskInfo.copy(
 				triggerTime = calculateTriggerTime(foregroundTaskInfo)
 		)
 		logger.i("Scheduling task to run at ${newForegroundTaskInfo.triggerTime.toDateFormat()}")

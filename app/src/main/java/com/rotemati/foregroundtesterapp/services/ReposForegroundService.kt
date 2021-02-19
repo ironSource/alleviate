@@ -5,7 +5,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import androidx.core.app.NotificationCompat
-import com.rotemati.foregroundsdk.external.retryepolicy.RetryPolicy
 import com.rotemati.foregroundsdk.external.services.ForegroundTaskService
 import com.rotemati.foregroundsdk.external.stopinfo.StoppedCause
 import com.rotemati.foregroundsdk.external.taskinfo.result.Result
@@ -37,18 +36,13 @@ class ReposForegroundService : ForegroundTaskService() {
 		return try {
 			TesterAppLogger.i("Work started")
 			val repos = GitHubRepo(getNetworkService()).getRepos().execute()
-			Thread.sleep(10000)
+//			Thread.sleep(10000)
 			TesterAppLogger.i("${repos.body()?.size} repos fetched")
 			Result.Success
 		} catch (e: Exception) {
-			TesterAppLogger.d("onError")
-			e.message?.let { TesterAppLogger.e(it) }
-			TesterAppLogger.i("retryCount: ${foregroundTaskInfo.retryCount}")
-			return if (foregroundTaskInfo.retryCount >= 3) {
-				Result.Failed
-			} else {
-				Result.Reschedule(RetryPolicy.Linear)
-			}
+			TesterAppLogger.e("${e.javaClass.name} was thrown")
+			TesterAppLogger.i("retryCount: $retryCount")
+			Result.Failed
 		}
 	}
 
@@ -62,23 +56,21 @@ class ReposForegroundService : ForegroundTaskService() {
 
 	private fun onTerminatedBySystem(): Result {
 		TesterAppLogger.d("onTerminatedBySystem")
-//		return Result.Reschedule(RetryPolicy.Linear)
-		return Result.Failed
+		return Result.Retry
 	}
 
 	private fun onNoConnectivity(): Result {
 		TesterAppLogger.d("NoConnectivity")
-//		return Result.Reschedule(RetryPolicy.Linear)
-		return Result.Failed
+		return Result.Retry
 	}
 
 	private fun onTimeout(): Result {
 		TesterAppLogger.d("onTimeout")
-		TesterAppLogger.i("retryCount: ${foregroundTaskInfo.retryCount}")
-		return if (foregroundTaskInfo.retryCount >= 3) {
+		TesterAppLogger.i("retryCount: $retryCount")
+		return if (retryCount > 3) {
 			Result.Failed
 		} else {
-			Result.Reschedule(RetryPolicy.Exponential)
+			Result.Retry
 		}
 	}
 }

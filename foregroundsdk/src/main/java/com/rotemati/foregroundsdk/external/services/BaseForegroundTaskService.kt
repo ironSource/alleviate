@@ -5,10 +5,8 @@ import android.app.Service
 import android.content.Intent
 import com.rotemati.foregroundsdk.external.ForegroundSdk
 import com.rotemati.foregroundsdk.external.logger.ForegroundLogger
-import com.rotemati.foregroundsdk.external.retryepolicy.RetryPolicy
 import com.rotemati.foregroundsdk.external.scheduler.ForegroundTasksSchedulerWrapper
 import com.rotemati.foregroundsdk.external.stopinfo.StoppedCause
-import com.rotemati.foregroundsdk.external.taskinfo.ForegroundTaskInfo
 import com.rotemati.foregroundsdk.external.taskinfo.result.Result
 import com.rotemati.foregroundsdk.internal.backoff.RetryBackoffCalculator
 import com.rotemati.foregroundsdk.internal.connectivity.*
@@ -29,7 +27,7 @@ abstract class BaseForegroundTaskService : Service() {
 	private lateinit var retryBackoffCalculator: RetryBackoffCalculator
 	private lateinit var getConnectivityState: GetConnectivityState
 	private lateinit var getConnectivityAllowance: GetConnectivityAllowance
-	lateinit var foregroundTaskInfo: ForegroundTaskInfo
+	lateinit var taskInfoSpec: TaskInfoSpec
 	private var finishedGracefully: Boolean = false
 
 	private val logger: ForegroundLogger = LoggerWrapper(ForegroundSdk.logger)
@@ -58,9 +56,14 @@ abstract class BaseForegroundTaskService : Service() {
 
 	override fun onDestroy() {
 		super.onDestroy()
+		connectivityHandler.unregister(this)
 		logger.d("finishedGracefully onDestroy: $finishedGracefully")
 		if (!finishedGracefully) {
-			doStop(StoppedCause.TerminatedBySystem)
+			when (doStop(StoppedCause.TerminatedBySystem)) {
+				Result.Failed -> onFailed()
+				Result.Success -> onSuccess()
+				Result.Retry -> onReschedule()
+			}
 		}
 	}
 
@@ -77,12 +80,13 @@ abstract class BaseForegroundTaskService : Service() {
 			onError("job id not valid")
 			return START_NOT_STICKY
 		}
-		val taskInfoSpec = pendingTasksRepository.getTaskInfo(jobId)
-		if (taskInfoSpec == null) {
+		val retrievedTaskInfoSpec = pendingTasksRepository.getTaskInfo(jobId)
+		if (retrievedTaskInfoSpec == null) {
 			onError("job isn't in the repo")
 			return START_NOT_STICKY
 		} else {
-			foregroundTaskInfo = taskInfoSpec.foregroundTaskInfo
+			taskInfoSpec = retrievedTaskInfoSpec
+			val foregroundTaskInfo = taskInfoSpec.foregroundTaskInfo
 			val connectivityAllowance = getConnectivityAllowance(foregroundTaskInfo.networkType, getConnectivityState)
 			if (connectivityAllowance is ConnectivityAllowance.NotAllowed) {
 				onError(connectivityAllowance.reason, foregroundTaskInfo.id)
@@ -95,33 +99,32 @@ abstract class BaseForegroundTaskService : Service() {
 				if (!finishedGracefully) {
 					if (getConnectivityAllowance(foregroundTaskInfo.networkType, getConnectivityState) is ConnectivityAllowance.NotAllowed) {
 						logger.d("ConnectionNotAllowed")
-						doStop(StoppedCause.ConnectionNotAllowed)
+						when (doStop(StoppedCause.ConnectionNotAllowed)) {
+							Result.Failed -> onFailed()
+							Result.Success -> onSuccess()
+							Result.Retry -> onReschedule()
+						}
 					}
 				} else {
 					logger.d("ignoring onConnectivityEvent - service finished gracefully")
 				}
 			}
 			startForeground(foregroundTaskInfo.id, getNotification())
-			when (val result = startWork()) {
-				is Result.Success -> onSuccess()
-				is Result.Failed -> onFailed()
-				is Result.Reschedule -> onReschedule(taskInfoSpec, result.retryPolicy)
-				is Result.AlreadyFinished -> logger.d("AlreadyFinished")
+			when (startWork()) {
+				Result.Success -> onSuccess()
+				Result.Failed -> onFailed()
+				Result.Retry -> onReschedule()
 			}
 		}
 		return START_NOT_STICKY
 	}
 
-	private fun onReschedule(taskInfoSpec: TaskInfoSpec, retryPolicy: RetryPolicy) {
+	private fun onReschedule() {
 		logger.i("Reschedule Task")
 		val newRetryCount = taskInfoSpec.foregroundTaskInfo.retryCount.inc()
-		foregroundTaskInfo = ForegroundTaskInfo(
-				id = foregroundTaskInfo.id,
-				networkType = foregroundTaskInfo.networkType,
-				persisted = foregroundTaskInfo.persisted,
-				minLatencyMillis = retryBackoffCalculator.calculate(retryPolicy, newRetryCount),
-				timeoutMillis = foregroundTaskInfo.timeoutMillis,
-				retryCount = newRetryCount
+		val foregroundTaskInfo = taskInfoSpec.foregroundTaskInfo.copy(
+				minLatencyMillis = retryBackoffCalculator.calculate(taskInfoSpec.foregroundTaskInfo.retryData, newRetryCount),
+				retryCount = newRetryCount,
 		)
 		foregroundTasksSchedulerWrapper.scheduleForegroundTask(
 				Class.forName(taskInfoSpec.componentName),
@@ -132,13 +135,13 @@ abstract class BaseForegroundTaskService : Service() {
 
 	private fun onFailed() {
 		logger.i("Task failed - removing it from repo")
-		pendingTasksRepository.delete(foregroundTaskInfo.id)
+		pendingTasksRepository.delete(taskInfoSpec.foregroundTaskInfo.id)
 		finish()
 	}
 
 	private fun onSuccess() {
 		logger.i("Task completed successfully - removing it from repo")
-		pendingTasksRepository.delete(foregroundTaskInfo.id)
+		pendingTasksRepository.delete(taskInfoSpec.foregroundTaskInfo.id)
 		finish()
 	}
 

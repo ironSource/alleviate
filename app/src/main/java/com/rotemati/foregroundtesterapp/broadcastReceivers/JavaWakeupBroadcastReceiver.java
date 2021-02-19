@@ -17,12 +17,10 @@ public class JavaWakeupBroadcastReceiver
 	@Override
 	public void onReceive(Context context, Intent intent) {
 
-		final ForegroundTaskInfo foregroundTaskInfo = new ForegroundTaskInfo.Builder().id(12345)
-		                                                                              .networkType(NetworkType.Any)
-		                                                                              .persisted(true)
-		                                                                              .minLatencyMillis(TimeUnit.SECONDS.toMillis(10))
-		                                                                              .timeoutMillis(TimeUnit.SECONDS.toMillis(15))
-		                                                                              .build();
+		final ForegroundTaskInfo foregroundTaskInfo = new ForegroundTaskInfo.Builder(12345).networkType(NetworkType.Any)
+		                                                                                   .persisted(true)
+		                                                                                   .minLatencyMillis(TimeUnit.SECONDS.toMillis(10))
+		                                                                                   .build();
 
 		new ForegroundTasksSchedulerWrapper().scheduleForegroundTask(ReposForegroundService.class, foregroundTaskInfo);
 	}

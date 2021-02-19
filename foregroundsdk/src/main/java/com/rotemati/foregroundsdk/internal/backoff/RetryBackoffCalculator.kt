@@ -1,17 +1,24 @@
 package com.rotemati.foregroundsdk.internal.backoff
 
+import com.rotemati.foregroundsdk.external.retryepolicy.RetryData
 import com.rotemati.foregroundsdk.external.retryepolicy.RetryPolicy
-import java.util.concurrent.TimeUnit
+import kotlin.math.pow
+
 
 internal class RetryBackoffCalculator {
-	fun calculate(retryPolicy: RetryPolicy, retryCount: Int): Long {
-		return when (retryPolicy) {
+	fun calculate(retryData: RetryData, retryCount: Int): Long {
+		return when (retryData.retryPolicy) {
 			RetryPolicy.Linear -> {
-				retryCount * TimeUnit.SECONDS.toMillis(1)
+				retryCount * retryData.initialBackoff
 			}
 			RetryPolicy.Exponential -> {
-				retryCount * retryCount * TimeUnit.SECONDS.toMillis(1)
+				(retryData.initialBackoff * 2).pow(retryCount - 1)
 			}
 		}
 	}
 }
+
+private inline fun Long.pow(x: Int): Long {
+	return this.toDouble().pow(x).toLong()
+}
+

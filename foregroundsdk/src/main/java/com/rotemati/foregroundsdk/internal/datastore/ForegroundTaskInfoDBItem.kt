@@ -1,5 +1,6 @@
 package com.rotemati.foregroundsdk.internal.datastore
 
+import com.rotemati.foregroundsdk.external.retryepolicy.RetryData
 import com.rotemati.foregroundsdk.external.taskinfo.network.NetworkType
 import java.io.Serializable
 
@@ -11,5 +12,6 @@ internal data class ForegroundTaskInfoDBItem(
 		val timeoutMillis: Long,
 		val retryCount: Int,
 		val triggerTime: Long,
-		val componentName: String
+		val componentName: String,
+		val retryData: RetryData
 ) : Serializable

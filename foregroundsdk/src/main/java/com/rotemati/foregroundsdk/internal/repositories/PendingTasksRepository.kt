@@ -34,7 +34,7 @@ internal class PendingTasksRepository(context: Context) {
 	}
 }
 
-internal data class TaskInfoSpec(
+data class TaskInfoSpec(
 		val foregroundTaskInfo: ForegroundTaskInfo,
 		val componentName: String
 )

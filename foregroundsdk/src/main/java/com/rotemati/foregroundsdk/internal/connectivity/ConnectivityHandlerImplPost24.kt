@@ -15,7 +15,7 @@ import com.rotemati.foregroundsdk.internal.logger.LoggerWrapper
 internal class ConnectivityHandlerImplPost24 : ConnectivityManager.NetworkCallback(), ConnectivityHandler {
 
 	private val logger: ForegroundLogger = LoggerWrapper(ForegroundSdk.logger)
-	private var onConnectivityChanged: () -> Unit = {}
+	private var onConnectivityChanged: (() -> Unit)? = null
 
 	override val connected: Boolean
 		get() = isConnected(ForegroundSdk.context)
@@ -32,38 +32,38 @@ internal class ConnectivityHandlerImplPost24 : ConnectivityManager.NetworkCallba
 	override fun onLost(network: Network) {
 		super.onLost(network)
 		logger.d("onLost")
-		onConnectivityChanged()
+		onConnectivityChanged?.invoke()
 	}
 
 	override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
 		super.onCapabilitiesChanged(network, networkCapabilities)
 		logger.d("onCapabilitiesChanged")
-		onConnectivityChanged()
+		onConnectivityChanged?.invoke()
 	}
 
 	override fun onUnavailable() {
 		super.onUnavailable()
 		logger.d("onUnavailable")
-		onConnectivityChanged()
+		onConnectivityChanged?.invoke()
 	}
 
 	override fun onLosing(network: Network, maxMsToLive: Int) {
 		super.onLosing(network, maxMsToLive)
 		logger.d("onLosing")
-		onConnectivityChanged()
+		onConnectivityChanged?.invoke()
 	}
 
 	override fun onAvailable(network: Network) {
 		super.onAvailable(network)
 		logger.d("onAvailable")
-		onConnectivityChanged()
+		onConnectivityChanged?.invoke()
 	}
 
 	override fun onBlockedStatusChanged(network: Network, blocked: Boolean) {
 		super.onBlockedStatusChanged(network, blocked)
 		logger.d("onBlockedStatusChanged")
 		this.blocked = blocked
-		onConnectivityChanged()
+		onConnectivityChanged?.invoke()
 	}
 
 	override fun register(context: Context) {
