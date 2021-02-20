@@ -67,7 +67,7 @@ class ReposForegroundService : ForegroundTaskService() {
 	private fun onTimeout(): Result {
 		TesterAppLogger.d("onTimeout")
 		TesterAppLogger.i("retryCount: $retryCount")
-		return if (retryCount > 3) {
+		return if (retryCount >= 3) {
 			Result.Failed
 		} else {
 			Result.Retry

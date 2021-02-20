@@ -3,6 +3,8 @@ package com.rotemati.foregroundtesterapp.ui.main
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.rotemati.foregroundsdk.external.retryepolicy.RetryData
+import com.rotemati.foregroundsdk.external.retryepolicy.RetryPolicy
 import com.rotemati.foregroundsdk.external.scheduler.ForegroundTasksSchedulerWrapper
 import com.rotemati.foregroundsdk.external.taskinfo.foregroundTaskInfo
 import com.rotemati.foregroundsdk.external.taskinfo.network.NetworkType
@@ -40,11 +42,12 @@ class MainViewModel(private val repository: GitHubRepo) : ViewModel() {
 			persisted = true
 			minLatencyMillis = TimeUnit.SECONDS.toMillis(5)
 			timeoutMillis = TimeUnit.SECONDS.toMillis(7)
+			retryData = RetryData(retryPolicy = RetryPolicy.Exponential, initialBackoff = 4000)
 		}
 		ForegroundTasksSchedulerWrapper().scheduleForegroundTask(
-				ReposForegroundService::class.java,
-				foregroundTaskInfo
-		)
+                ReposForegroundService::class.java,
+                foregroundTaskInfo
+        )
 		//			foregroundTasksSchedulerWrapper.cancel(11200)
 	}
 }
