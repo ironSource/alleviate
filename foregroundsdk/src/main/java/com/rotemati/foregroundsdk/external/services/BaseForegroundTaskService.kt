@@ -7,6 +7,7 @@ import com.rotemati.foregroundsdk.external.ForegroundSdk
 import com.rotemati.foregroundsdk.external.logger.ForegroundLogger
 import com.rotemati.foregroundsdk.external.scheduler.ForegroundTasksSchedulerWrapper
 import com.rotemati.foregroundsdk.external.stopinfo.StoppedCause
+import com.rotemati.foregroundsdk.external.taskinfo.ForegroundTaskInfo
 import com.rotemati.foregroundsdk.external.taskinfo.result.Result
 import com.rotemati.foregroundsdk.internal.backoff.RetryBackoffCalculator
 import com.rotemati.foregroundsdk.internal.connectivity.*
@@ -27,10 +28,13 @@ abstract class BaseForegroundTaskService : Service() {
 	private lateinit var retryBackoffCalculator: RetryBackoffCalculator
 	private lateinit var getConnectivityState: GetConnectivityState
 	private lateinit var getConnectivityAllowance: GetConnectivityAllowance
-	lateinit var taskInfoSpec: TaskInfoSpec
+	private lateinit var taskInfoSpec: TaskInfoSpec
 	private var finishedGracefully: Boolean = false
 
 	private val logger: ForegroundLogger = LoggerWrapper(ForegroundSdk.logger)
+
+	val foregroundTaskInfo: ForegroundTaskInfo
+		get() = taskInfoSpec.foregroundTaskInfo
 
 	abstract fun startWork(): Result
 
@@ -86,7 +90,6 @@ abstract class BaseForegroundTaskService : Service() {
 			return START_NOT_STICKY
 		} else {
 			taskInfoSpec = retrievedTaskInfoSpec
-			val foregroundTaskInfo = taskInfoSpec.foregroundTaskInfo
 			val connectivityAllowance = getConnectivityAllowance(foregroundTaskInfo.networkType, getConnectivityState)
 			if (connectivityAllowance is ConnectivityAllowance.NotAllowed) {
 				onError(connectivityAllowance.reason, foregroundTaskInfo.id)
@@ -121,27 +124,27 @@ abstract class BaseForegroundTaskService : Service() {
 
 	private fun onReschedule() {
 		logger.i("Reschedule Task")
-		val newRetryCount = taskInfoSpec.foregroundTaskInfo.retryCount.inc()
-		val foregroundTaskInfo = taskInfoSpec.foregroundTaskInfo.copy(
-				minLatencyMillis = retryBackoffCalculator.calculate(taskInfoSpec.foregroundTaskInfo.retryData, newRetryCount),
+		val newRetryCount = foregroundTaskInfo.retryCount.inc()
+		val newForegroundTaskInfo = foregroundTaskInfo.copy(
+				minLatencyMillis = retryBackoffCalculator.calculate(foregroundTaskInfo.retryData, newRetryCount),
 				retryCount = newRetryCount,
 		)
 		foregroundTasksSchedulerWrapper.scheduleForegroundTask(
 				Class.forName(taskInfoSpec.componentName),
-				foregroundTaskInfo
+				newForegroundTaskInfo
 		)
 		finish()
 	}
 
 	private fun onFailed() {
 		logger.i("Task failed - removing it from repo")
-		pendingTasksRepository.delete(taskInfoSpec.foregroundTaskInfo.id)
+		pendingTasksRepository.delete(foregroundTaskInfo.id)
 		finish()
 	}
 
 	private fun onSuccess() {
 		logger.i("Task completed successfully - removing it from repo")
-		pendingTasksRepository.delete(taskInfoSpec.foregroundTaskInfo.id)
+		pendingTasksRepository.delete(foregroundTaskInfo.id)
 		finish()
 	}
 
@@ -162,6 +165,6 @@ abstract class BaseForegroundTaskService : Service() {
 	override fun onBind(intent: Intent?): Nothing? = null
 
 	companion object {
-		const val EXTRA_TASK_ID = "com.ironsource.foreground.EXTRA_TASK_ID"
+		const val EXTRA_TASK_ID = "com.rotemati.foregroundsdk.EXTRA_TASK_ID"
 	}
 }

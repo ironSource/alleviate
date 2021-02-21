@@ -9,10 +9,10 @@ internal class ForegroundTasksPendingIntentFactoryPre26(
 ) : ForegroundTasksPendingIntentFactory {
 
 	override fun createSchedulePendingIntent(taskInfoSpec: TaskInfoSpec): PendingIntent {
-		return PendingIntent.getService(context, 0, createCommonIntent(context, taskInfoSpec), 0)
+		return PendingIntent.getService(context, taskInfoSpec.foregroundTaskInfo.id, createCommonIntent(context, taskInfoSpec), 0)
 	}
 
 	override fun createCancelPendingIntent(taskInfoSpec: TaskInfoSpec): PendingIntent {
-		return PendingIntent.getService(context, 0, createCommonIntent(context, taskInfoSpec), PendingIntent.FLAG_NO_CREATE)
+		return PendingIntent.getService(context, taskInfoSpec.foregroundTaskInfo.id, createCommonIntent(context, taskInfoSpec), PendingIntent.FLAG_NO_CREATE)
 	}
 }

@@ -1,10 +1,7 @@
 package com.rotemati.foregroundtesterapp.application
 
 import android.app.Application
-import android.util.Log
 import com.rotemati.foregroundsdk.external.foregroundSdk
-import com.rotemati.foregroundsdk.external.logger.ForegroundLogger
-import com.rotemati.foregroundtesterapp.sdk.BuildConfig
 
 class MainApplication : Application() {
 	override fun onCreate() {

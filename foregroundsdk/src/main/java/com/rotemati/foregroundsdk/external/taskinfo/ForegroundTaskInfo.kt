@@ -5,7 +5,7 @@ import com.rotemati.foregroundsdk.external.retryepolicy.RetryPolicy
 import com.rotemati.foregroundsdk.external.taskinfo.network.NetworkType
 import java.io.Serializable
 
-private const val NOT_SCHEDULED_TIMESTAMP = -1L
+private const val NOT_SCHEDULED = -1L
 
 data class ForegroundTaskInfo(
 		val id: Int,
@@ -15,10 +15,10 @@ data class ForegroundTaskInfo(
 		val timeoutMillis: Long,
 		val retryData: RetryData,
 		val retryCount: Int = 1,
-		val triggerTime: Long = NOT_SCHEDULED_TIMESTAMP
+		val triggerTime: Long = NOT_SCHEDULED
 ) : Serializable {
 
-	fun isScheduled() = triggerTime != NOT_SCHEDULED_TIMESTAMP
+	fun isScheduled() = triggerTime != NOT_SCHEDULED
 
 	class Builder(private val id: Int) {
 		private var networkType: NetworkType = NetworkType.None

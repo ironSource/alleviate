@@ -1,4 +1,4 @@
-package com.rotemati.foregroundsdk.repo.tests
+package com.rotemati.foregroundsdk.tests
 
 import androidx.test.core.app.ApplicationProvider
 import com.rotemati.foregroundsdk.common.api.test

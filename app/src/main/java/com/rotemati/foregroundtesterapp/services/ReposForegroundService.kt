@@ -34,15 +34,16 @@ class ReposForegroundService : ForegroundTaskService() {
 
 	override fun doWork(): Result {
 		return try {
-			TesterAppLogger.i("Work started")
+			TesterAppLogger.i("Work started. task id: ${foregroundTaskInfo.id}")
 			val repos = GitHubRepo(getNetworkService()).getRepos().execute()
-//			Thread.sleep(10000)
 			TesterAppLogger.i("${repos.body()?.size} repos fetched")
 			Result.Success
 		} catch (e: Exception) {
-			TesterAppLogger.e("${e.javaClass.name} was thrown")
-			TesterAppLogger.i("retryCount: $retryCount")
-			Result.Failed
+			return if (foregroundTaskInfo.retryCount >= 3) {
+				Result.Failed
+			} else {
+				Result.Retry
+			}
 		}
 	}
 
@@ -66,8 +67,7 @@ class ReposForegroundService : ForegroundTaskService() {
 
 	private fun onTimeout(): Result {
 		TesterAppLogger.d("onTimeout")
-		TesterAppLogger.i("retryCount: $retryCount")
-		return if (retryCount >= 3) {
+		return if (foregroundTaskInfo.retryCount >= 3) {
 			Result.Failed
 		} else {
 			Result.Retry

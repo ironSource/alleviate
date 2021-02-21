@@ -16,9 +16,6 @@ abstract class ForegroundTaskService : BaseForegroundTaskService() {
 	private val executorService: ExecutorService = Executors.newSingleThreadExecutor()
 	private val logger: ForegroundLogger = LoggerWrapper(ForegroundSdk.logger)
 
-	val retryCount: Int
-		get() = taskInfoSpec.foregroundTaskInfo.retryCount
-
 	abstract override fun getNotification(): Notification
 
 	abstract fun doWork(): Result
@@ -33,7 +30,7 @@ abstract class ForegroundTaskService : BaseForegroundTaskService() {
 		return try {
 			executorService.submit(Callable {
 				doWork()
-			}).get(taskInfoSpec.foregroundTaskInfo.timeoutMillis, TimeUnit.MILLISECONDS)
+			}).get(foregroundTaskInfo.timeoutMillis, TimeUnit.MILLISECONDS)
 		} catch (e: Exception) {
 			doStop(StoppedCause.Timeout)
 		}

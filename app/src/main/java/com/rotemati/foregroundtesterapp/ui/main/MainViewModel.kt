@@ -45,9 +45,9 @@ class MainViewModel(private val repository: GitHubRepo) : ViewModel() {
 			retryData = RetryData(retryPolicy = RetryPolicy.Exponential, initialBackoff = 4000)
 		}
 		ForegroundTasksSchedulerWrapper().scheduleForegroundTask(
-                ReposForegroundService::class.java,
-                foregroundTaskInfo
-        )
+				ReposForegroundService::class.java,
+				foregroundTaskInfo
+		)
 		//			foregroundTasksSchedulerWrapper.cancel(11200)
 	}
 }
