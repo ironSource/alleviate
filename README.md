@@ -14,14 +14,14 @@ https://medium.com/@rotemmatityahu/workmanager-does-it-always-manage-to-work-fd8
 
 ## Usage:
 - Kotlin
-```kotlin
+
 fun scheduleForegroundTask() {
 	val foregroundTaskInfo = foregroundTaskInfo {
 	    id = TASK_ID
 		networkType = NetworkType.Any
-		persisted = true // survive reboot
-		minLatencyMillis = TimeUnit.HOURS.toMillis(12) // when to trigger the task
-		timeoutMillis = TimeUnit.MINUTES.toMillis(1) // after 1 minute, remove the notification
+		persisted = true 
+		minLatencyMillis = TimeUnit.HOURS.toMillis(12) 
+		timeoutMillis = TimeUnit.MINUTES.toMillis(1) 
 		retryData = RetryData(retryPolicy = RetryPolicy.Exponential, initialBackoff = 4000)
 	}
 	ForegroundTasksSchedulerWrapper().scheduleForegroundTask(
@@ -33,7 +33,7 @@ fun scheduleForegroundTask() {
 fun cancelForegroundTask() {
     ForegroundTasksSchedulerWrapper().cancel(TASK_ID)
 }
-```
+
 - Java
 ```java
 public void scheduleForegroundTask() {
@@ -53,22 +53,22 @@ public void scheduleForegroundTask() {
 ```kotlin
 class MainApplication : Application() {
 	override fun onCreate() {
-		super.onCreate()
-		foregroundSdk {
+        super.onCreate()
+	    foregroundSdk {
 	        context = this@MainApplication // mandatory
-	        logger = CustomAppLogger() // optional
-		}
+	        logger = CustomAppLogger() // optional 
+	    }
 	}
 }
 ```
 
 ## Supported foreground task descriptors
 ```kotlin
-val id: Int, // mandatory
+val id: Int // mandatory
 val networkType: NetworkType
-val persisted: Boolean
-val minLatencyMillis: Long 
-val timeoutMillis: Long
+val persisted: Boolean // survive reboot
+val minLatencyMillis: Long // when to trigger the task
+val timeoutMillis: Long // when to stop the task and remove the notification
 ```
 
 ## Supported network types
@@ -106,49 +106,46 @@ class ReposForegroundService : ForegroundTaskService() {
             .setContentTitle(resources.getString(R.string.my_title))
             .setContentText(resources.getString(R.string.my_body))
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .build()
+            .build() 
     }
 
     // Called from a background thread
-	override fun doWork(): Result {
-		return try {
-			val repos = GitHubRepo(getNetworkService()).getRepos().execute()
-			Result.Success
-		} catch (e: Exception) {
-			return if (foregroundTaskInfo.retryCount >= MAX_RETRIES) {
-				Result.Failed
-			} else {
-				Result.Retry
-			}
-		}
-	}
+    override fun doWork(): Result {
+	    return try {
+		    val repos = GitHubRepo(getNetworkService()).getRepos().execute()
+		    Result.Success
+	    } catch (e: Exception) {
+		    return if (foregroundTaskInfo.retryCount >= MAX_RETRIES) {
+			    Result.Failed
+		    } else {
+			    Result.Retry
+		    }
+	    }   
+    }
 
-	override fun onStop(stoppedCause: StoppedCause): Result {
-		return when (stoppedCause) {
-			StoppedCause.Timeout -> onTimeout() // called when timeout reached according to ForegroundTaskInfo.timeoutMillis
-			StoppedCause.ConnectionNotAllowed -> onNoConnectivity() // called when connection type was changed while work is being executed
-			StoppedCause.TerminatedBySystem -> onTerminatedBySystem() // called when the system decides to stop the task while work is being executed
-		}
-	}
+    override fun onStop(stoppedCause: StoppedCause): Result {
+	    return when (stoppedCause) {
+		    StoppedCause.Timeout -> onTimeout() // called when timeout reached according to ForegroundTaskInfo.timeoutMillis
+		    StoppedCause.ConnectionNotAllowed -> onNoConnectivity() // called when connection type was changed while work is being executed
+		    StoppedCause.TerminatedBySystem -> onTerminatedBySystem() // called when the system decides to stop the task while work is being executed
+	    } 
+    }
 
-	private fun onTimeout(): Result {
-    	TesterAppLogger.d("onTimeout")
-    	return if (foregroundTaskInfo.retryCount >= MAX_RETRIES) {
-   			Result.Failed
-   		} else {
-   			Result.Retry
-   		}
-   	}
+    private fun onTimeout(): Result {
+        return if (foregroundTaskInfo.retryCount >= MAX_RETRIES) {
+   		    Result.Failed
+   	    } else {
+   		    Result.Retry
+   	    } 
+    }
 
-	private fun onTerminatedBySystem(): Result {
-   		TesterAppLogger.d("onTerminatedBySystem")
-   		return Result.Failed
-   	}
+    private fun onTerminatedBySystem(): Result {
+   	    return Result.Failed 
+    }
 
-  	private fun onNoConnectivity(): Result {
-    	TesterAppLogger.d("NoConnectivity")
-   		return Result.Retry
-   	}
+    private fun onNoConnectivity(): Result {
+   	    return Result.Retry 
+    }
 }
 ```
 ## Download
