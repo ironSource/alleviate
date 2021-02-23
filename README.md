@@ -8,12 +8,12 @@ This is done using a component called ForegroundTaskInfo that will be triggered 
 Check out my Medium post for clearer explanation about the problems this library tries to solve:
 https://medium.com/@rotemmatityahu/workmanager-does-it-always-manage-to-work-fd8518655052
 
-## Features:
-- Easy foreground tasks scheduling.
+## Features
+- Easy Foreground Service scheduling.
 - Friendly API using DSLs and Java builder.
 - Support custom logger.
 
-## Usage:
+## Usage
 - Kotlin
 ```kotlin
 fun scheduleForegroundTask() {
@@ -64,7 +64,7 @@ class MainApplication : Application() {
 }
 ```
 
-## Create foreground task
+## Creating foreground task
 ```kotlin
 class ReposForegroundService : ForegroundTaskService() {
 
