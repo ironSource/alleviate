@@ -1,5 +1,7 @@
 # allevaite
 
+![Logo](assets/logo.png)
+
 A lightweight Android library that wraps your work requests and ensure they will run approximately at the time you want it to.
 This is done using a component called ForegroundWork that will be triggered when all work constraints are satisfied.
 
