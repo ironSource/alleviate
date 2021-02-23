@@ -14,7 +14,7 @@ https://medium.com/@rotemmatityahu/workmanager-does-it-always-manage-to-work-fd8
 
 ## Usage:
 - Kotlin
-
+```kotlin
 fun scheduleForegroundTask() {
 	val foregroundTaskInfo = foregroundTaskInfo {
 	    id = TASK_ID
@@ -33,6 +33,7 @@ fun scheduleForegroundTask() {
 fun cancelForegroundTask() {
     ForegroundTasksSchedulerWrapper().cancel(TASK_ID)
 }
+```
 
 - Java
 ```java
@@ -126,25 +127,17 @@ class ReposForegroundService : ForegroundTaskService() {
     override fun onStop(stoppedCause: StoppedCause): Result {
 	    return when (stoppedCause) {
 		    StoppedCause.Timeout -> onTimeout() // called when timeout reached according to ForegroundTaskInfo.timeoutMillis
-		    StoppedCause.ConnectionNotAllowed -> onNoConnectivity() // called when connection type was changed while work is being executed
-		    StoppedCause.TerminatedBySystem -> onTerminatedBySystem() // called when the system decides to stop the task while work is being executed
+		    StoppedCause.ConnectionNotAllowed -> Result.Retry // called when connection type was changed while work is being executed
+		    StoppedCause.TerminatedBySystem -> Result.Failed // called when the system decides to stop the task while work is being executed
 	    } 
     }
 
     private fun onTimeout(): Result {
         return if (foregroundTaskInfo.retryCount >= MAX_RETRIES) {
-   		    Result.Failed
-   	    } else {
-   		    Result.Retry
-   	    } 
-    }
-
-    private fun onTerminatedBySystem(): Result {
-   	    return Result.Failed 
-    }
-
-    private fun onNoConnectivity(): Result {
-   	    return Result.Retry 
+            Result.Failed
+        } else {
+            Result.Retry
+        } 
     }
 }
 ```
