@@ -1,9 +1,9 @@
-# network-exposure
+# allevaite
 
-A lightwate Android library that wraps your work requests and ensure they will run approximetly at the time you want it to.
-This is done using a component called ForegroundWork that will be triggered when all work constaints are satisfied.
+A lightweight Android library that wraps your work requests and ensure they will run approximately at the time you want it to.
+This is done using a component called ForegroundWork that will be triggered when all work constraints are satisfied.
 
-Check out my Medium post for clearer explentation about the problems this library tries to solve:
+Check out my Medium post for clearer explanation about the problems this library tries to solve:
 https://medium.com/@rotemmatityahu/workmanager-does-it-always-manage-to-work-fd8518655052
 
 ## Features:
@@ -16,26 +16,33 @@ https://medium.com/@rotemmatityahu/workmanager-does-it-always-manage-to-work-fd8
 - Kotlin
 ```kotlin
 fun scheduleForegroundTask() {
-	val foregroundTaskInfo = foregroundTaskInfo(11200) {
+	val foregroundTaskInfo = foregroundTaskInfo {
+	    id = TASK_ID
 		networkType = NetworkType.Any
-		persisted = true
-		minLatencyMillis = TimeUnit.HOURS.toMillis(12)
-		timeoutMillis = TimeUnit.MINUTES.toMillis(1)
+		persisted = true // survive reboot
+		minLatencyMillis = TimeUnit.HOURS.toMillis(12) // when to trigger the task
+		timeoutMillis = TimeUnit.MINUTES.toMillis(1) // after 1 minute, remove the notification
+		retryData = RetryData(retryPolicy = RetryPolicy.Exponential, initialBackoff = 4000)
 	}
 	ForegroundTasksSchedulerWrapper().scheduleForegroundTask(
 			ReposForegroundService::class.java,
 			foregroundTaskInfo
 	)
 }
+
+fun cancelForegroundTask() {
+    ForegroundTasksSchedulerWrapper().cancel(TASK_ID)
+}
 ```
 - Java
 ```java
 public void scheduleForegroundTask() {
-	final ForegroundTaskInfo foregroundTaskInfo = new ForegroundTaskInfo.Builder().id(12345)
-	                                                                              .networkType(NetworkType.Any)
+	final ForegroundTaskInfo foregroundTaskInfo = new ForegroundTaskInfo.Builder().id(TASK_ID)
+	                                                                              .networkType(NetworkType.NotRoaming)
 	                                                                              .persisted(true)
 	                                                                              .minLatencyMillis(TimeUnit.HOURS.toMillis(12))
 	                                                                              .timeoutMillis(TimeUnit.MINUTES.toMillis(1))
+	                                                                              .retryData(new RetryData(RetryPolicy.Linear, 3000))
 	                                                                              .build();
 
 	new ForegroundTasksSchedulerWrapper().scheduleForegroundTask(ReposForegroundService.class, foregroundTaskInfo);
@@ -47,8 +54,10 @@ public void scheduleForegroundTask() {
 class MainApplication : Application() {
 	override fun onCreate() {
 		super.onCreate()
-		ForegroundSDK.context = this
-		ForegroundSDK.foregroundLogger = CustomAppLogger() // optional
+		foregroundSdk {
+	        context = this@MainApplication // mandatory
+	        logger = CustomAppLogger() // optional
+		}
 	}
 }
 ```
@@ -60,6 +69,23 @@ val networkType: NetworkType
 val persisted: Boolean
 val minLatencyMillis: Long 
 val timeoutMillis: Long
+```
+
+## Supported network types
+```kotlin
+enum class NetworkType {
+	None,
+	Any,
+	NotRoaming
+}
+```
+
+## Supported backoff policies
+```kotlin
+enum class RetryPolicy {
+	Linear, // retryCount * retryData.initialBackoff
+	Exponential // (retryData.initialBackoff * 2).pow(retryCount - 1)
+}
 ```
 
 ## Create foreground task
@@ -83,32 +109,52 @@ class ReposForegroundService : ForegroundTaskService() {
             .build()
     }
 
-    override fun doWork(): Result {
-        return try {
-            val futureRepos = GitHubRepo(getNetworkService()).getRepos()
-            Result.Success
-        } catch (e: Exception) {
-            if (foregroundTaskInfo.retryCount >= 3) {
-                Result.Failed
-            } else {
-                Result.Reschedule(RetryPolicy.Linear)
-            }
-        }
-    }
+    // Called from a background thread
+	override fun doWork(): Result {
+		return try {
+			val repos = GitHubRepo(getNetworkService()).getRepos().execute()
+			Result.Success
+		} catch (e: Exception) {
+			return if (foregroundTaskInfo.retryCount >= MAX_RETRIES) {
+				Result.Failed
+			} else {
+				Result.Retry
+			}
+		}
+	}
 
-    override fun onTimeout(): Result {
-        return if (foregroundTaskInfo.retryCount >= 3) {
-            Result.Failed
-        } else {
-            Result.Reschedule(RetryPolicy.Exponential)
-        }
-    }
+	override fun onStop(stoppedCause: StoppedCause): Result {
+		return when (stoppedCause) {
+			StoppedCause.Timeout -> onTimeout() // called when timeout reached according to ForegroundTaskInfo.timeoutMillis
+			StoppedCause.ConnectionNotAllowed -> onNoConnectivity() // called when connection type was changed while work is being executed
+			StoppedCause.TerminatedBySystem -> onTerminatedBySystem() // called when the system decides to stop the task while work is being executed
+		}
+	}
+
+	private fun onTimeout(): Result {
+    	TesterAppLogger.d("onTimeout")
+    	return if (foregroundTaskInfo.retryCount >= MAX_RETRIES) {
+   			Result.Failed
+   		} else {
+   			Result.Retry
+   		}
+   	}
+
+	private fun onTerminatedBySystem(): Result {
+   		TesterAppLogger.d("onTerminatedBySystem")
+   		return Result.Failed
+   	}
+
+  	private fun onNoConnectivity(): Result {
+    	TesterAppLogger.d("NoConnectivity")
+   		return Result.Retry
+   	}
 }
 ```
 ## Download
 ```groovy
 dependencies {
-    implementation 'com.ironsource.aura.blabla:blabla:1.0.0'
+    implementation 'com.ironsource.aura.alleviate:alleviate:1.0.0'
 }
 ```
 ## License
