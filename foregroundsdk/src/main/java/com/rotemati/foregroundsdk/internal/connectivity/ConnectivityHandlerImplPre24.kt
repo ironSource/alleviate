@@ -11,7 +11,7 @@ private const val ACTION_CONNECTIVITY_CHANGE = "android.net.conn.CONNECTIVITY_CH
 
 internal class ConnectivityHandlerImplPre24 : ConnectivityHandler, BroadcastReceiver() {
 
-	private var onConnectivityChanged: (() -> Unit)? = null
+	private var onConnectivityChanged: ConnectivityChangedListener? = null
 
 	override val connected
 		get() = isConnected(ForegroundSdk.context)
@@ -21,12 +21,12 @@ internal class ConnectivityHandlerImplPre24 : ConnectivityHandler, BroadcastRece
 
 	override val blocked = false
 
-	override fun setConnectivityListener(listener: () -> Unit) {
+	override fun setConnectivityListener(listener: ConnectivityChangedListener) {
 		this.onConnectivityChanged = listener
 	}
 
 	override fun onReceive(context: Context?, intent: Intent?) {
-		onConnectivityChanged?.invoke()
+		onConnectivityChanged?.onChanged()
 	}
 
 	override fun register(context: Context) {

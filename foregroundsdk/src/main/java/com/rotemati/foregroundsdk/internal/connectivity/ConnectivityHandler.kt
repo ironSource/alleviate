@@ -15,11 +15,16 @@ internal interface ConnectivityHandler {
 
 	val roaming: Boolean
 
-	fun setConnectivityListener(listener: () -> Unit)
+	fun setConnectivityListener(listener: ConnectivityChangedListener)
 
 	fun isRoamingOld(context: Context): Boolean {
 		val connectivityManager = context.getConnectivityManager()
 		val networkInfo = connectivityManager.activeNetworkInfo
 		return networkInfo != null && networkInfo.isConnected && networkInfo.isRoaming
 	}
+}
+
+
+internal interface ConnectivityChangedListener {
+	fun onChanged()
 }

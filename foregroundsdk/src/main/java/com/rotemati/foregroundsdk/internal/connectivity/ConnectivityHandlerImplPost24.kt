@@ -15,7 +15,7 @@ import com.rotemati.foregroundsdk.internal.logger.LoggerWrapper
 internal class ConnectivityHandlerImplPost24 : ConnectivityManager.NetworkCallback(), ConnectivityHandler {
 
 	private val logger: ForegroundLogger = LoggerWrapper(ForegroundSdk.logger)
-	private var onConnectivityChanged: (() -> Unit)? = null
+	private var onConnectivityChanged: ConnectivityChangedListener? = null
 
 	override val connected: Boolean
 		get() = isConnected(ForegroundSdk.context)
@@ -25,45 +25,39 @@ internal class ConnectivityHandlerImplPost24 : ConnectivityManager.NetworkCallba
 
 	override var blocked = false
 
-	override fun setConnectivityListener(listener: () -> Unit) {
+	override fun setConnectivityListener(listener: ConnectivityChangedListener) {
 		this.onConnectivityChanged = listener
 	}
 
 	override fun onLost(network: Network) {
 		super.onLost(network)
-		logger.d("onLost")
-		onConnectivityChanged?.invoke()
+		onConnectivityChanged?.onChanged()
 	}
 
 	override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
 		super.onCapabilitiesChanged(network, networkCapabilities)
-		logger.d("onCapabilitiesChanged")
-		onConnectivityChanged?.invoke()
+		onConnectivityChanged?.onChanged()
 	}
 
 	override fun onUnavailable() {
 		super.onUnavailable()
-		logger.d("onUnavailable")
-		onConnectivityChanged?.invoke()
+		onConnectivityChanged?.onChanged()
 	}
 
 	override fun onLosing(network: Network, maxMsToLive: Int) {
 		super.onLosing(network, maxMsToLive)
-		logger.d("onLosing")
-		onConnectivityChanged?.invoke()
+		onConnectivityChanged?.onChanged()
 	}
 
 	override fun onAvailable(network: Network) {
 		super.onAvailable(network)
-		logger.d("onAvailable")
-		onConnectivityChanged?.invoke()
+		onConnectivityChanged?.onChanged()
 	}
 
 	override fun onBlockedStatusChanged(network: Network, blocked: Boolean) {
 		super.onBlockedStatusChanged(network, blocked)
-		logger.d("onBlockedStatusChanged")
 		this.blocked = blocked
-		onConnectivityChanged?.invoke()
+		onConnectivityChanged?.onChanged()
 	}
 
 	override fun register(context: Context) {
