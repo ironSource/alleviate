@@ -38,7 +38,7 @@ fun cancelForegroundTask() {
 - Java
 ```java
 public void scheduleForegroundTask() {
-final ForegroundTaskInfo foregroundTaskInfo = new ForegroundTaskInfo.Builder().id(TASK_ID)
+    final ForegroundTaskInfo foregroundTaskInfo = new ForegroundTaskInfo.Builder().id(TASK_ID)
                                                                               .networkType(NetworkType.NotRoaming)
                                                                               .persisted(true)
                                                                               .minLatencyMillis(TimeUnit.HOURS.toMillis(12))
@@ -55,10 +55,10 @@ final ForegroundTaskInfo foregroundTaskInfo = new ForegroundTaskInfo.Builder().i
 class MainApplication : Application() {
     override fun onCreate() {
         super.onCreate()
-	    foregroundSdk {
+        foregroundSdk {
             context = this@MainApplication // mandatory
             logger = CustomAppLogger() // optional 
-	    } 
+        } 
     }
 }
 ```
@@ -124,17 +124,17 @@ class ReposForegroundService : ForegroundTaskService() {
         } 
     }
 
-	override fun onStop(stoppedCause: StoppedCause): Result {
+    override fun onStop(stoppedCause: StoppedCause): Result {
         return when (stoppedCause) {
             StoppedCause.Timeout -> onTimeout() // called when timeout reached according to ForegroundTaskInfo.timeoutMillis
             StoppedCause.ConnectionNotAllowed -> Result.Retry // called when connection type was changed while work is being executed
-            StoppedCause.TerminatedBySystem -> Result.Failed // called when the system decides to stop the task while work is being executed
-		}
-	}
+            StoppedCause.TerminatedBySystem -> Result.Failed // called when the system decides to stop the task while work is being executed 
+        } 
+    }
 
-	private fun onTimeout(): Result {
+    private fun onTimeout(): Result {
         return if (foregroundTaskInfo.retryCount >= MAX_RETRIES) { 
-        	Result.Failed 
+            Result.Failed 
         } else { 
             Result.Retry 
         } 
