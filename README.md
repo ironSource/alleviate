@@ -16,18 +16,18 @@ https://medium.com/@rotemmatityahu/workmanager-does-it-always-manage-to-work-fd8
 - Kotlin
 ```kotlin
 fun scheduleForegroundTask() {
-	val foregroundTaskInfo = foregroundTaskInfo {
-	    id = TASK_ID
-		networkType = NetworkType.Any
-		persisted = true 
-		minLatencyMillis = TimeUnit.HOURS.toMillis(12) 
-		timeoutMillis = TimeUnit.MINUTES.toMillis(1) 
-		retryData = RetryData(retryPolicy = RetryPolicy.Exponential, initialBackoff = 4000)
-	}
-	ForegroundTasksSchedulerWrapper().scheduleForegroundTask(
-			ReposForegroundService::class.java,
-			foregroundTaskInfo
-	)
+    val foregroundTaskInfo = foregroundTaskInfo {
+        id = TASK_ID
+        networkType = NetworkType.Any
+        persisted = true 
+        minLatencyMillis = TimeUnit.HOURS.toMillis(12) 
+        timeoutMillis = TimeUnit.MINUTES.toMillis(1) 
+        retryData = RetryData(retryPolicy = RetryPolicy.Exponential, initialBackoff = 4000) 
+    }
+    ForegroundTasksSchedulerWrapper().scheduleForegroundTask(
+        ReposForegroundService::class.java,
+        foregroundTaskInfo
+    )
 }
 
 fun cancelForegroundTask() {
@@ -38,28 +38,28 @@ fun cancelForegroundTask() {
 - Java
 ```java
 public void scheduleForegroundTask() {
-	final ForegroundTaskInfo foregroundTaskInfo = new ForegroundTaskInfo.Builder().id(TASK_ID)
-	                                                                              .networkType(NetworkType.NotRoaming)
-	                                                                              .persisted(true)
-	                                                                              .minLatencyMillis(TimeUnit.HOURS.toMillis(12))
-	                                                                              .timeoutMillis(TimeUnit.MINUTES.toMillis(1))
-	                                                                              .retryData(new RetryData(RetryPolicy.Linear, 3000))
-	                                                                              .build();
+final ForegroundTaskInfo foregroundTaskInfo = new ForegroundTaskInfo.Builder().id(TASK_ID)
+                                                                              .networkType(NetworkType.NotRoaming)
+                                                                              .persisted(true)
+                                                                              .minLatencyMillis(TimeUnit.HOURS.toMillis(12))
+                                                                              .timeoutMillis(TimeUnit.MINUTES.toMillis(1))
+                                                                              .retryData(new RetryData(RetryPolicy.Linear, 3000))
+                                                                              .build();
 
-	new ForegroundTasksSchedulerWrapper().scheduleForegroundTask(ReposForegroundService.class, foregroundTaskInfo);
+    new ForegroundTasksSchedulerWrapper().scheduleForegroundTask(ReposForegroundService.class, foregroundTaskInfo);
 }
 ```
 
 ## Initializing the SDK
 ```kotlin
 class MainApplication : Application() {
-	override fun onCreate() {
+    override fun onCreate() {
         super.onCreate()
 	    foregroundSdk {
-	        context = this@MainApplication // mandatory
-	        logger = CustomAppLogger() // optional 
-	    }
-	}
+            context = this@MainApplication // mandatory
+            logger = CustomAppLogger() // optional 
+	    } 
+    }
 }
 ```
 
@@ -75,17 +75,17 @@ val timeoutMillis: Long // when to stop the task and remove the notification
 ## Supported network types
 ```kotlin
 enum class NetworkType {
-	None,
-	Any,
-	NotRoaming
+    None,
+    Any,
+    NotRoaming
 }
 ```
 
 ## Supported backoff policies
 ```kotlin
 enum class RetryPolicy {
-	Linear, // retryCount * retryData.initialBackoff
-	Exponential // (retryData.initialBackoff * 2).pow(retryCount - 1)
+    Linear, // retryCount * retryData.initialBackoff
+    Exponential // (retryData.initialBackoff * 2).pow(retryCount - 1)
 }
 ```
 
@@ -112,31 +112,31 @@ class ReposForegroundService : ForegroundTaskService() {
 
     // Called from a background thread
     override fun doWork(): Result {
-	    return try {
-		    val repos = GitHubRepo(getNetworkService()).getRepos().execute()
-		    Result.Success
-	    } catch (e: Exception) {
-		    return if (foregroundTaskInfo.retryCount >= MAX_RETRIES) {
-			    Result.Failed
-		    } else {
-			    Result.Retry
-		    }
-	    }   
+        return try { 
+            val repos = GitHubRepo(getNetworkService()).getRepos().execute()
+            Result.Success 
+        } catch (e: Exception) { 
+            if (foregroundTaskInfo.retryCount >= MAX_RETRIES) { 
+                Result.Failed 
+            } else { 
+                Result.Retry 
+            } 
+        } 
     }
 
-    override fun onStop(stoppedCause: StoppedCause): Result {
-	    return when (stoppedCause) {
-		    StoppedCause.Timeout -> onTimeout() // called when timeout reached according to ForegroundTaskInfo.timeoutMillis
-		    StoppedCause.ConnectionNotAllowed -> Result.Retry // called when connection type was changed while work is being executed
-		    StoppedCause.TerminatedBySystem -> Result.Failed // called when the system decides to stop the task while work is being executed
-	    } 
-    }
+	override fun onStop(stoppedCause: StoppedCause): Result {
+        return when (stoppedCause) {
+            StoppedCause.Timeout -> onTimeout() // called when timeout reached according to ForegroundTaskInfo.timeoutMillis
+            StoppedCause.ConnectionNotAllowed -> Result.Retry // called when connection type was changed while work is being executed
+            StoppedCause.TerminatedBySystem -> Result.Failed // called when the system decides to stop the task while work is being executed
+		}
+	}
 
-    private fun onTimeout(): Result {
-        return if (foregroundTaskInfo.retryCount >= MAX_RETRIES) {
-            Result.Failed
-        } else {
-            Result.Retry
+	private fun onTimeout(): Result {
+        return if (foregroundTaskInfo.retryCount >= MAX_RETRIES) { 
+        	Result.Failed 
+        } else { 
+            Result.Retry 
         } 
     }
 }
