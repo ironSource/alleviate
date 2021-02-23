@@ -10,7 +10,6 @@ https://medium.com/@rotemmatityahu/workmanager-does-it-always-manage-to-work-fd8
 
 ## Features:
 - Easy foreground tasks scheduling.
-- In case the app is in 'never' bucket, raise foreground notification in order to get out of the bucket.
 - Friendly API using DSLs and Java builder.
 - Support custom logger.
 
@@ -65,32 +64,6 @@ class MainApplication : Application() {
 }
 ```
 
-## Supported foreground task descriptors
-```kotlin
-val id: Int // mandatory
-val networkType: NetworkType
-val persisted: Boolean // survive reboot
-val minLatencyMillis: Long // when to trigger the task
-val timeoutMillis: Long // when to stop the task and remove the notification
-```
-
-## Supported network types
-```kotlin
-enum class NetworkType {
-    None,
-    Any,
-    NotRoaming
-}
-```
-
-## Supported backoff policies
-```kotlin
-enum class RetryPolicy {
-    Linear, // retryCount * retryData.initialBackoff
-    Exponential // (retryData.initialBackoff * 2).pow(retryCount - 1)
-}
-```
-
 ## Create foreground task
 ```kotlin
 class ReposForegroundService : ForegroundTaskService() {
@@ -128,9 +101,9 @@ class ReposForegroundService : ForegroundTaskService() {
 
     override fun onStop(stoppedCause: StoppedCause): Result {
         return when (stoppedCause) {
-            StoppedCause.Timeout -> onTimeout() // called when timeout reached according to ForegroundTaskInfo.timeoutMillis
+            StoppedCause.Timeout -> onTimeout() // called when timeout was reached according to ForegroundTaskInfo.timeoutMillis
             StoppedCause.ConnectionNotAllowed -> Result.Retry // called when connection type was changed while work is being executed
-            StoppedCause.TerminatedBySystem -> Result.Failed // called when the system decides to stop the task while work is being executed 
+            StoppedCause.TerminatedBySystem -> Result.Failed // called when the system decided to stop the task while work is being executed 
         } 
     }
 
@@ -143,6 +116,33 @@ class ReposForegroundService : ForegroundTaskService() {
     }
 }
 ```
+
+## Supported foreground task descriptors
+```kotlin
+val id: Int // mandatory
+val networkType: NetworkType
+val persisted: Boolean // survive reboot
+val minLatencyMillis: Long // when to trigger the task
+val timeoutMillis: Long // when to stop the task and remove the notification
+```
+
+## Supported network types
+```kotlin
+enum class NetworkType {
+    None,
+    Any,
+    NotRoaming
+}
+```
+
+## Supported backoff policies
+```kotlin
+enum class RetryPolicy {
+    Linear, // retryCount * retryData.initialBackoff
+    Exponential // (retryData.initialBackoff * 2)^(retryCount - 1)
+}
+```
+
 ## Download
 ```groovy
 dependencies {
