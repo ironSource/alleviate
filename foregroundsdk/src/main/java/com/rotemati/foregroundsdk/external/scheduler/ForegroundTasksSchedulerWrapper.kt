@@ -30,7 +30,7 @@ class ForegroundTasksSchedulerWrapper {
 		val newForegroundTaskInfo = foregroundTaskInfo.copy(
 				triggerTime = calculateTriggerTime(foregroundTaskInfo)
 		)
-		logger.i("Scheduling task to run at ${newForegroundTaskInfo.triggerTime.toDateFormat()}")
+		logger.i("Scheduling task ${foregroundTaskInfo.id} to run at ${newForegroundTaskInfo.triggerTime.toDateFormat()}")
 		val taskInfoSpec = TaskInfoSpec(newForegroundTaskInfo, className.name)
 		pendingTasksRepository.insert(taskInfoSpec)
 		context.getAlarmManager().set(

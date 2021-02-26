@@ -15,7 +15,6 @@ import com.rotemati.foregroundsdk.internal.extensions.getJobScheduler
 import com.rotemati.foregroundsdk.internal.logger.LoggerWrapper
 import com.rotemati.foregroundsdk.internal.repositories.PendingTasksRepository
 
-private const val JOB_SERVICE_ID = 12
 private const val FOREGROUND_TASK_ID = "FOREGROUND_TASK_ID"
 
 internal class ConnectivityJobService : JobService() {
@@ -52,7 +51,7 @@ internal class ConnectivityJobService : JobService() {
 				putInt(FOREGROUND_TASK_ID, taskInfo.id)
 			}
 			val jobInfoBuilder = JobInfo.Builder(
-					JOB_SERVICE_ID,
+					taskInfo.id,
 					ComponentName(context.packageName, ConnectivityJobService::class.java.name)
 			).setPersisted(taskInfo.persisted).setRequiredNetworkType(converter.convert(taskInfo.networkType))
 					.setExtras(bundle)
