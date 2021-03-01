@@ -2,7 +2,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: "kotlin-kapt"
-apply from: 'versions.gradle'
+apply from: '../versions.gradle'
 
 android {
     compileSdkVersion COMPILE_SDK_VERSION
@@ -18,13 +18,9 @@ android {
     }
 
     buildTypes {
-        debug {
-            debuggable true
-            minifyEnabled false
-        }
         release {
-            debuggable false
             minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 
@@ -37,18 +33,9 @@ android {
                     from components.release
 
                     // You can then customize attributes of the publication as shown below.
-                    groupId = 'com.github.ironSource.alleviate'
-                    artifactId = 'final'
-                    version = '1.0.0'
-                }
-                // Creates a Maven publication called “debug”.
-                debug(MavenPublication) {
-                    // Applies the component for the debug build variant.
-                    from components.debug
-
-                    groupId = 'com.github.ironSource.alleviate'
-                    artifactId = 'final-debug'
-                    version = '1.0.0'
+                    groupId = 'com.github.ironSource'
+                    artifactId = 'alleviate'
+                    version = '1.0'
                 }
             }
         }
@@ -64,5 +51,5 @@ dependencies {
 
     // Tests
     testImplementation "org.robolectric:robolectric:$ROBOLECTRIC_VERSION"
-    testImplementation 'androidx.test.ext:junit-ktx:1.1.2'
+    testImplementation "androidx.test.ext:junit-ktx:$JUNIT_KTX_VERSION"
 }

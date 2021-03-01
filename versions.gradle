@@ -7,18 +7,19 @@ ext {
     VERSION_CODE = MAJOR_VERSION * 10000 + MINOR_VERSION * 100 + HOTFIX_VERSION
 
     // Kotlin version
-    KOTLIN_VERSION = "1.4.21"
 
     // Android SDK
     COMPILE_SDK_VERSION = 30
     MIN_SDK_VERSION = 21
     TARGET_SDK_VERSION = 30
-
-    // Dependencies
+    KOTLIN_VERSION = "1.4.21"
     ANDROIDX_CORE = "1.3.2"
+    GRADLE_PLUGIN_VERSION = '4.0.2'
+    MAVEN_PLUGIN_VERSION = '2.1'
 
     // Tests
     ROBOLECTRIC_VERSION = "4.4"
+    JUNIT_KTX_VERSION = '1.1.2'
 
     DSLINT_VERSION = "1.0.3"
 }
