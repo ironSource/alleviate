@@ -146,7 +146,7 @@ enum class RetryPolicy {
 ## Download
 ```groovy
 dependencies {
-    implementation 'com.ironsource.aura.alleviate:alleviate:1.0.0'
+    implementation 'com.github.ironSource:alleviate:1.0.0'
 }
 ```
 ## License
