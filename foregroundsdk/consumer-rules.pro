@@ -1,0 +1,8 @@
+-keep class com.rotemati.foregroundsdk.external.ForegroundSdk
+-keep class com.rotemati.foregroundsdk.external.ForegroundSdkDSL
+-keep class com.rotemati.foregroundsdk.external.logger.ForegroundLogger
+-keep class com.rotemati.foregroundsdk.external.retryepolicy.*
+-keep class com.rotemati.foregroundsdk.external.scheduler.*
+-keep class com.rotemati.foregroundsdk.external.services.ForegroundTaskService
+-keep class com.rotemati.foregroundsdk.external.stopinfo.*
+-keep class com.rotemati.foregroundsdk.external.taskinfo.*
