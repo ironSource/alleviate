@@ -15,7 +15,6 @@ android {
         versionCode VERSION_CODE
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        consumerProguardFiles "consumer-rules.pro" //test proguard - what happens when run release?
     }
 
     buildTypes {
