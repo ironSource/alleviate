@@ -144,6 +144,17 @@ enum class RetryPolicy {
 ```
 
 ## Download
+Add this to your root build.gradle
+```groovy
+allprojects {
+    repositories {
+        ...
+        maven { url 'https://jitpack.io' }
+    }
+}
+```
+
+Add this to your module's build.gradle
 ```groovy
 dependencies {
     implementation 'com.github.ironSource:alleviate:1.0.0'
