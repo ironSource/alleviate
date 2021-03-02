@@ -6,7 +6,7 @@ A lightweight Android library that wraps your work requests and ensure they will
 This is done using a component called ForegroundTaskInfo that will be triggered when all work constraints are satisfied.
 
 Check out my Medium post for clearer explanation about the problems this library tries to solve:
-https://medium.com/@rotemmatityahu/workmanager-does-it-always-manage-to-work-fd8518655052
+https://rotemmatityahu.medium.com/workmanager-does-it-always-manage-to-work-fd8518655052
 
 ## Features
 - Easy Foreground Service scheduling.
