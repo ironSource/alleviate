@@ -51,7 +51,7 @@ public void scheduleForegroundTask() {
 }
 ```
 
-## Initializing the SDK
+### Initialize the SDK
 ```kotlin
 class MainApplication : Application() {
     override fun onCreate() {
@@ -64,7 +64,7 @@ class MainApplication : Application() {
 }
 ```
 
-## Creating foreground task
+### Create your Service
 ```kotlin
 class ReposForegroundService : ForegroundTaskService() {
 
@@ -117,7 +117,7 @@ class ReposForegroundService : ForegroundTaskService() {
 }
 ```
 
-## Supported foreground task descriptors
+### Supported foreground task descriptors
 ```kotlin
 val id: Int // mandatory
 val networkType: NetworkType
@@ -126,7 +126,7 @@ val minLatencyMillis: Long // when to trigger the task
 val timeoutMillis: Long // when to stop the task and remove the notification
 ```
 
-## Supported network types
+### Supported network types
 ```kotlin
 enum class NetworkType {
     None,
@@ -135,7 +135,7 @@ enum class NetworkType {
 }
 ```
 
-## Supported backoff policies
+### Supported backoff policies
 ```kotlin
 enum class RetryPolicy {
     Linear, // retryCount * retryData.initialBackoff
@@ -143,7 +143,7 @@ enum class RetryPolicy {
 }
 ```
 
-## Download
+### Download
 Add this to your root build.gradle
 ```groovy
 allprojects {
@@ -160,7 +160,7 @@ dependencies {
     implementation 'com.github.ironSource:alleviate:1.0.0'
 }
 ```
-## License
+### License
 Copyright (c) 2021 Rotem Matityahu
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
